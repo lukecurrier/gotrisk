@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Multiplayer Buttons</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+      body { font-family: sans-serif; padding: 20px; }
+      .player { margin: 5px 0; font-weight: bold; }
+      button { margin-right: 10px; padding: 10px 20px; }
+    </style>
+  </head>
+  <body>
+    <h1>Multiplayer Buttons</h1>
+    <div id="players"></div>
+    <button id="btn1">+5 when everyone clicks</button>
+    <button id="btn2">+1 instantly</button>
+
+    <script>
+      const socket = io();
+      const playersDiv = document.getElementById("players");
+      const roomId = "default";
+
+      // Persist name in localStorage
+      name = prompt("Enter your name:") || "Anonymous";
+      socket.emit("joinGame", { roomId, name });
+
+      document.getElementById("btn1").addEventListener("click", () => {
+        socket.emit("button1", { roomId });
+      });
+
+      document.getElementById("btn2").addEventListener("click", () => {
+        socket.emit("button2", { roomId });
+      });
+
+      socket.on("players", (players) => {
+        playersDiv.innerHTML = "";
+        players.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "player";
+          div.textContent = `${p.name}: ${p.score}`;
+          playersDiv.appendChild(div);
+        });
+      });
+    </script>
+  </body>
+</html>
