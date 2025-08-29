@@ -3,8 +3,6 @@ import { Region } from '../client/src/game/Board/Region';
 import { Territory } from '../client/src/game/Board/Territory';
 import { GameManager } from '../client/src/game/GameManager';
 
-const manager = GameManager.instance;
-
 // MARK: The North
 export const bearIsland = new Territory("Bear Island", true, false, false);
 export const theGift = new Territory("The Gift", true, false, false);

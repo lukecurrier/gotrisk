@@ -9,6 +9,7 @@ export abstract class Card {
     readonly name: string;
     readonly checks: CardCheck[];
     readonly manager: GameManager;
+    protected type: CardType;
     protected owner?: Player;
 
     constructor(id: number, name: string, checks: CardCheck[], manager: GameManager) {
@@ -16,6 +17,10 @@ export abstract class Card {
         this.name = name;
         this.checks = checks;
         this.manager = manager;
+    }
+
+    cardType(): CardType {
+        return this.type;
     }
 
     isActive(): boolean { 
@@ -39,6 +44,7 @@ export class CharacterCard extends Card {
     constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, price: number) {
         super(id, name, checks, manager);
         this.price = price;
+        this.type = CardType.Character;
     }
 
     override play(): void {
@@ -61,6 +67,7 @@ export class MaesterCard extends Card {
     constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, price: number) {
         super(id, name, checks, manager);
         this.price = price;
+        this.type = CardType.Maester;
     }
 
     override play(): void {
@@ -84,6 +91,7 @@ export class VictoryCard extends Card {
     constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, value: number) {
         super(id, name, checks, manager);
         this.value = value;
+        this.type = CardType.Victory;
     }
 
     protected effect(): void {
@@ -99,6 +107,7 @@ export class TerritoryCard extends Card {
         super(id, name, checks, manager);
         this.token = token;
         this.territory = territory;
+        this.type = CardType.Territory;
     }
 
     protected effect(): void {
@@ -128,4 +137,11 @@ export class Deck<T extends Card> {
     size(): number { return this.cards.length; }
 
     isEmpty(): boolean { return this.cards.length === 0; }
+}
+
+export enum CardType {
+    Character, 
+    Maester, 
+    Victory, 
+    Territory
 }

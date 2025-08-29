@@ -1,20 +1,31 @@
 import type { Territory } from "./Board/Territory";
+import { Card, MaesterCard, TerritoryCard, CharacterCard, VictoryCard, CardType } from "./Cards";
 import { GameManager } from "./GameManager";
 
 export class Player {
     readonly id: number;
     readonly name: string;
+    readonly color: string;
     private capital?: Territory;
     private gold: number;
     private victoryPoints: number;
     private territories: Territory[];
+    private cards: Map<CardType, Card[]>;
 
-    constructor(id: number, name: string) {
+    constructor(id: number, name: string, color: string) {
         this.id = id;
         this.name = name;
+        this.color = color;
         this.gold = 0;
         this.victoryPoints = 0;
         this.territories = [];
+
+        this.cards = new Map([
+            [CardType.Character, []],
+            [CardType.Maester, []],
+            [CardType.Victory, []],
+            [CardType.Territory, []]
+        ]);
     }
 
     // MARK: Checks
@@ -50,6 +61,10 @@ export class Player {
         }
         return this.capital;
     }
+
+    getColor(): string {
+        return this.color;
+    }
     
     canSpend(gold: number): boolean { return this.gold >= gold; }
 
@@ -57,6 +72,27 @@ export class Player {
     
     getVictoryPoints(): number {
         return this.victoryPoints;
+    }
+
+    getCards(type: CardType): Card[] {
+        return this.cards.get(type) || [];
+    }
+
+    getAllCards(): Card[] {
+        return Array.from(this.cards.values()).flat();
+    }
+
+    getCardCount(type: CardType): number {
+        return this.getCards(type).length;
+    }
+
+    getTotalCardCount(): number {
+        return this.getAllCards().length;
+    }
+
+    hasCard(card: Card): boolean {
+        const cardsOfType = this.getCards(card.cardType());
+        return cardsOfType.includes(card);
     }
 
     // MARK: Setters
@@ -87,5 +123,24 @@ export class Player {
             throw new Error("Territory and Player disagree on owner!")
         }
         this.territories.push(territory);
+    }
+
+    addCard(card: Card): void {
+        const cardsOfType = this.cards.get(card.cardType());
+        if (cardsOfType && !cardsOfType.includes(card)) {
+            cardsOfType.push(card);
+        }
+    }
+
+    removeCard(card: Card): boolean {
+        const cardsOfType = this.cards.get(card.cardType());
+        if (!cardsOfType) return false;
+        
+        const index = cardsOfType.indexOf(card);
+        if (index !== -1) {
+            cardsOfType.splice(index, 1);
+            return true;
+        }
+        return false;
     }
 }
