@@ -1,12 +1,12 @@
 import { Player } from "./Player";
 import { GameManager } from "./GameManager";
 
-export type CardCheck = (player: Player, manager: GameManager) => boolean;
+export type CardCheck = (player: Player) => boolean;
 
 // Example checks
 export const CardChecks = {
     playerHasEnoughGold: (amount: number): CardCheck => 
-        (player, _game) => player.canSpend(amount),
+        (player) => player.canSpend(amount),
 
     // isPlayerTurn: (): CardCheck =>
     //     (player, game) => game.currentPlayer === player,

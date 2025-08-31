@@ -1,6 +1,7 @@
 import { Token } from "../utils/Utils";
 import { Territory } from "./Board/Territory";
 import type { CardCheck } from "./CardCheck";
+import { CardEffect } from "./CardEffect";
 import { GameManager } from "./GameManager";
 import type { Player } from "./Player";
 
@@ -8,15 +9,13 @@ export abstract class Card {
     readonly id: number;
     readonly name: string;
     readonly checks: CardCheck[];
-    readonly manager: GameManager;
     protected type: CardType;
     protected owner?: Player;
 
-    constructor(id: number, name: string, checks: CardCheck[], manager: GameManager) {
+    constructor(id: number, name: string, checks: CardCheck[]) {
         this.id = id;
         this.name = name;
         this.checks = checks;
-        this.manager = manager;
     }
 
     cardType(): CardType {
@@ -25,7 +24,7 @@ export abstract class Card {
 
     isActive(): boolean { 
         if (!this.owner) { throw new Error("No owner!")}
-        return this.checks.every(check => check(this.owner!, this.manager)); 
+        return this.checks.every(check => check(this.owner!)); 
     }
 
     play(): void {
@@ -40,10 +39,12 @@ export abstract class Card {
 
 export class CharacterCard extends Card {
     readonly price: number;
+    readonly cardEffect: CardEffect;
 
-    constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, price: number) {
-        super(id, name, checks, manager);
+    constructor(id: number, name: string, checks: CardCheck[], price: number, effect: CardEffect) {
+        super(id, name, checks);
         this.price = price;
+        this.cardEffect = effect;
         this.type = CardType.Character;
     }
 
@@ -64,8 +65,8 @@ export class CharacterCard extends Card {
 export class MaesterCard extends Card {
     readonly price: number;
 
-    constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, price: number) {
-        super(id, name, checks, manager);
+    constructor(id: number, name: string, checks: CardCheck[], price: number) {
+        super(id, name, checks);
         this.price = price;
         this.type = CardType.Maester;
     }
@@ -88,8 +89,8 @@ export class MaesterCard extends Card {
 export class VictoryCard extends Card {
     readonly value: number
 
-    constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, value: number) {
-        super(id, name, checks, manager);
+    constructor(id: number, name: string, checks: CardCheck[], value: number) {
+        super(id, name, checks);
         this.value = value;
         this.type = CardType.Victory;
     }
@@ -103,8 +104,8 @@ export class TerritoryCard extends Card {
     readonly token: Token;
     readonly territory: Territory;
 
-    constructor(id: number, name: string, checks: CardCheck[], manager: GameManager, token: Token, territory: Territory) {
-        super(id, name, checks, manager);
+    constructor(id: number, name: string, checks: CardCheck[], token: Token, territory: Territory) {
+        super(id, name, checks);
         this.token = token;
         this.territory = territory;
         this.type = CardType.Territory;
