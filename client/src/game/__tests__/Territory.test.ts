@@ -13,11 +13,11 @@ describe("Territory", () => {
     territoryB = new Territory("B", false, false, false);
     territoryA.addNeighbor(territoryB); 
 
-    player1 = new Player(1, "Player 1");
-    player2 = new Player(2, "Player 2");
+    player1 = new Player(1, "Player 1", "blue");
+    player2 = new Player(2, "Player 2", "green");
 
-    territoryA.changeOwner(player1, true);
-    territoryB.changeOwner(player2, true);
+    territoryA.changeOwner(player1);
+    territoryB.changeOwner(player2);
   });
 
   it("initializes with correct properties", () => {
