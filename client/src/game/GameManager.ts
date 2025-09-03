@@ -1,27 +1,30 @@
 import { Continent } from "./Board/Continent"
 import { Region } from "./Board/Region"
 import { Territory } from "./Board/Territory"
+import { Phase, PhaseManager } from "./GamePhase";
+import { GameSettings } from "./LobbyManager";
 import { Player } from "./Player";
 
 export class GameManager {
     private static _instance: GameManager;
 
-    players: Player[]
-    territories: Territory[];
-    regions: Region[];
-    continents: Continent[];
+    private phaseManager: PhaseManager;
 
-    gameOngoing: boolean;
+    readonly players: Player[]
+    readonly territories: Territory[];
+    readonly regions: Region[];
+    readonly continents: Continent[];
 
-    constructor(continents: Continent[]) {
+    private constructor(continents: Continent[], players: Player[]) {
+        this.phaseManager = new PhaseManager(players);
         this.continents = continents;
         this.regions = continents.flatMap(continent => continent.regions);
         this.territories = this.regions.flatMap(region => region.territories);
-        this.players = [];
+        this.players = players;
     }
 
-    static create(continents: Continent[]) {
-        GameManager._instance = new GameManager(continents);
+    static create(settings: GameSettings) {
+        GameManager._instance = new GameManager(settings.continents, settings.players);
         return GameManager._instance;
     }
 
@@ -42,13 +45,13 @@ export class GameManager {
 
     // MARK: Utilities
     guardPreGameOnly(): void {
-        if (this.gameOngoing) {
+        if (this.phaseManager.currentPhase.gameOngoing) {
             throw new Error("This action can only be performed before the game starts!");
         }
     }
 
     guardGameStarted(): void {
-        if (!this.gameOngoing) {
+        if (!this.phaseManager.currentPhase.gameOngoing) {
             throw new Error("This action can only be performed after the game starts!");
         }
     }
