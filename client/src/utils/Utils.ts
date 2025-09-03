@@ -1,42 +1,98 @@
 // Could choose to have these be methods under specific classes, but have them here for now just for funsies
 // Random data structures and utility functions
 
+import { assert } from "console";
 import type { Card } from "../game/Cards"
 
 export type Port = 0 | 1 | 2 | 3
 
 export enum Token {
-    Castle,
+    Fortification,
     Knight,
     SiegeEngine,
 }
 
-export class BattleResult {
-    attacker: number[];
-    defender: number[];
+export function randInt(low: number, high: number): number {
+    // random int, inclusive on low end, not inclusive on the high end
 
-    constructor(attacker: number[], defender: number[]) {
-        if (1 > attacker.length || attacker.length > 3) {
+    if (high <= low) {
+        throw Error("Randint called with low >= high");
+    }
+
+    return Math.floor(Math.random() * (high - low)) + low;
+}
+
+export class Die {
+    rollResult: number = 0;
+    maxValue: number = 6;
+    rollCount: number = 0;  // needed for the guy who re-rolls 1s, but only one time per die per battle
+
+    constructor(maxValue: number) {
+        this.rollResult = 0;
+        this.maxValue = maxValue;
+        this.rollCount = 0;
+    }
+
+    roll(): number {
+        this.rollResult = randInt(1, this.maxValue + 1);
+        this.rollCount++;
+        return this.rollResult;
+    }
+
+    view(): number {
+        return this.rollResult;
+    }
+
+    setToMaxValue(): number {
+        this.rollResult = this.maxValue;
+        return this.rollResult;
+    }
+
+    getRollCount(): number {
+        return this.rollCount;
+    }
+
+    addX(x: number): number { // intentionally can go beyond max face value on die
+        this.rollResult = this.rollResult + x;
+        return this.rollResult;
+    }
+
+}
+
+export class BattleResult {
+    attackDice: Die[];
+    defendDice: Die[];
+    attackingTokens: Token[];
+    defendingTokens: Token[];
+
+    // ONLY USE countTokensOfType, for counting tokens of type t in a list
+    filterToType = (t: Token) => ((innerToken: Token, i: number, list: Token[]) => t == innerToken ? 1 : 0);
+    countTokensOfType = (t: Token, tokens: Token[]) => tokens.filter(this.filterToType(t)).reduce((a, b) => a + b, 0);
+
+    constructor(attackingTroops: number, defendingTroops: number, 
+        attackingTokens: Token[], 
+        defendingTokens: Token[]) {
+
+        if (1 > attackingTroops || attackingTroops > 3) {
             throw new Error("Invalid number of attackers");
         }
 
-        if (1 > defender.length || defender.length > 2) {
+        if (1 > defendingTroops || defendingTroops > 2) {
             throw new Error("Invalid number of defenders");
         }
-        
-        this.attacker = attacker;
-        this.defender = defender;
+
+        this.applySiegeEngineEffects();
     }
 
     outcome(): { attackerLosses: number; defenderLosses: number } {
         let attackerLosses = 0;
         let defenderLosses = 0;
 
-        const rounds = Math.min(this.attacker.length, this.defender.length);
+        const rounds = Math.min(this.attackDice.length, this.defendDice.length);
 
         for (let i = 0; i < rounds; i++) {
-            const attackerDie = this.attacker[i]!;
-            const defenderDie = this.defender[i]!;
+            const attackerDie = this.attackDice[i].rollResult;
+            const defenderDie = this.defendDice[i].rollResult;
 
             if (attackerDie > defenderDie) {
                 defenderLosses++;
@@ -47,28 +103,91 @@ export class BattleResult {
 
         return { attackerLosses, defenderLosses };
     }
-}
 
-export function roll(count: number, numD8s: number = 0): number[] {
-    const result: number[] = [];
+    fight(): void {
+        //Do the initial roll and incorporate token effects
+        //TODO add in pre-battle character card / maester card effects
 
-    // Roll the d8 dice first
-    for (let i = 0; i < numD8s; i++) {
-        result.push(Math.floor(Math.random() * 8) + 1);
     }
 
-    // Roll the remaining d6 dice
-    for (let i = 0; i < count - numD8s; i++) {
-        result.push(Math.floor(Math.random() * 6) + 1);
+    rollForBattle(): void { // Roll all dice
+
+        for (let d of this.attackDice) {
+            d.roll();
+        }
+        for (let d of this.defendDice) {
+            d.roll();
+        }
+
+        // Sort descending (highest to lowest)
+        this.attackDice.sort((a, b) => b.rollResult - a.rollResult);
+        this.defendDice.sort((a, b) => b.rollResult - a.rollResult);
     }
 
-    // Sort descending (highest to lowest)
-    return result.sort((a, b) => b - a);
+    applyFortificationEffects(): void {
+        // Apply defensive fortification effects
+        let defenderFortifications: number = this.countTokensOfType(Token.Fortification, this.defendingTokens);
+
+        for (let i = 0; i < defenderFortifications; i++) {
+            for (let d of this.defendDice) {
+                d.addX(1);
+            }
+        }
+    }
+
+    applyKnightEffects(): void { //only call with dice sorted descending
+
+        let attackerKnights: number = this.countTokensOfType(Token.Knight, this.attackingTokens);
+        let defenderKnights: number = this.countTokensOfType(Token.Knight, this.defendingTokens);
+
+        this.attackDice[0].addX(attackerKnights);
+        this.defendDice[0].addX(defenderKnights);
+
+    }
+
+    applySiegeEngineEffects(): void { 
+        // Apply effects from all siege engines (replace a six sided die with an 8-sider) 
+
+        let attackerSiegeEngines: number = this.countTokensOfType(Token.SiegeEngine, this.attackingTokens);
+        let defenderSiegeEngines: number = this.countTokensOfType(Token.SiegeEngine, this.defendingTokens);
+
+        const attacker8s: number = Math.min(attackerSiegeEngines, this.attackDice.length);
+        const attacker6s: number = this.attackDice.length - attacker8s;
+        this.attackDice = []
+        for (let i = 0; i < attacker6s; i++) {
+            this.attackDice.push(new Die(6));
+        }
+        for (let i = 0; i < attacker8s; i++) {
+            this.attackDice.push(new Die(8));
+        }
+
+        const defender8s: number = Math.min(defenderSiegeEngines, this.defendDice.length);
+        const defender6s: number = this.defendDice.length - defender8s;
+        this.defendDice = []
+        for (let i = 0; i < defender6s; i++) {
+            this.defendDice.push(new Die(6));
+        }
+        for (let i = 0; i < defender8s; i++) {
+            this.defendDice.push(new Die(8));
+        }
+    }
 }
 
 export function shuffleCards(deck: Card[]): Card[] {
-    // TODO: add shuffle function
-    return deck;
+    
+  const deckSize: number = deck.length;
+  if (1 > deckSize) {
+    throw new Error("Too few cards in deck to shuffle");
+  }
+
+  for (let i = deckSize - 1; i > 1; i--) {
+    const j = randInt(0, i+1);
+    const temp: Card = deck[i];
+    deck[i] = deck[j];
+    deck[j] = temp;
+  }
+
+  return deck;
 }
 
 

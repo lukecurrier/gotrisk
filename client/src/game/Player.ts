@@ -125,6 +125,14 @@ export class Player {
         this.territories.push(territory);
     }
 
+    removeTerritory(territory: Territory) { //Should only be called BEFORE giving territory to new owner
+        if (territory.getOwner() != this) {
+            throw new Error("Territory and Player disagree on owner!")
+        }
+        const territoryFilter = (t: Territory, i: number, tList: Territory []) => !(t === territory);
+        this.territories = this.territories.filter(territoryFilter);
+    }
+
     addCard(card: Card): void {
         const cardsOfType = this.cards.get(card.cardType());
         if (cardsOfType && !cardsOfType.includes(card)) {

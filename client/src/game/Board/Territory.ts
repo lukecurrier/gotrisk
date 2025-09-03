@@ -12,7 +12,7 @@ export class Territory {
     private owner?: Player;
     private capital?: Player;
     private knights: number;
-    private castles: number;
+    private fortifications: number;
     private siegeEngines: number;
 
     constructor(name: string, coastal: boolean, port: boolean, castle: boolean) {
@@ -23,21 +23,22 @@ export class Territory {
         this.castle = castle;
         this.troops = 0;
         this.knights = 0;
-        this.castles = 0;
+        this.fortifications = 0;
         this.siegeEngines = 0;
     }
 
     // MARK: Operations
-    resolveAttack(from: Territory, result: BattleResult) {
+    resolveAttack(from: Territory, result: BattleResult): void { //TODO fix from.maneuver logic
         let outcome = result.outcome()
         let lostTroops = outcome.defenderLosses;
 
         if(lostTroops >= this.getTroops()) {
-            this.removeTokens([Token.Castle, Token.Knight, Token.SiegeEngine])
+            this.removeTokens([Token.Fortification, Token.Knight, Token.SiegeEngine])
             this.changeOwner(from.getOwner())
-            from.maneuver(this, result.attacker.length - outcome.attackerLosses)
+            from.maneuver(this, result.attackDice.length - outcome.attackerLosses)
         } else {
             this.removeTroops(lostTroops)
+            from.removeTroops(outcome.attackerLosses)
         }
     }
 
@@ -47,7 +48,7 @@ export class Territory {
         }
 
         let tt = this.removeTokens([Token.Knight, Token.SiegeEngine])
-        to.placeTokens(tt.castlesRemoved, tt.knightsRemoved, tt.enginesRemoved)
+        to.placeTokens(tt.fortificationsRemoved, tt.knightsRemoved, tt.enginesRemoved)
         
         this.removeTroops(numberOfTroops)
         to.placeTroops(numberOfTroops)
@@ -78,11 +79,11 @@ export class Territory {
 
     getTroops(): number { return this.troops; }
 
-    getCastles(): number { return this.troops; }
+    getFortifications(): number { return this.fortifications; }
 
-    getKnights(): number { return this.troops; }
+    getKnights(): number { return this.knights; }
 
-    getSiegeEngines(): number { return this.troops; }
+    getSiegeEngines(): number { return this.siegeEngines; }
 
     // MARK: Setters
     addNeighbor(that: Territory) {
@@ -99,15 +100,15 @@ export class Territory {
         this.capital = player;
         player.setCapital(this)
 
-        this.setTroops(3)
+        this.setTroops(3) // TODO this might not be hard-codable forever, if starting setup is modifiable
     }
 
     placeTroops(troops: number) {
         this.troops += troops;
     }
 
-    placeTokens(castles: number = 0, knights: number = 0, siegeEngines: number = 0) {
-        this.castles += castles;
+    placeTokens(fortifications: number = 0, knights: number = 0, siegeEngines: number = 0) {
+        this.fortifications += fortifications;
         this.knights += knights;
         this.siegeEngines += siegeEngines;
     }
@@ -119,16 +120,16 @@ export class Territory {
         this.troops -= troopsToLose;
     }
 
-    removeTokens(tokens: Token[]): { castlesRemoved: number; knightsRemoved: number; enginesRemoved: number } {
-        let castlesRemoved = 0;
+    removeTokens(tokens: Token[]): { fortificationsRemoved: number; knightsRemoved: number; enginesRemoved: number } {
+        let fortificationsRemoved = 0;
         let knightsRemoved = 0;
         let enginesRemoved = 0;
 
         for (const token of tokens) {
             switch (token) {
-                case Token.Castle:
-                    castlesRemoved += this.castles;
-                    this.castles = 0;
+                case Token.Fortification:
+                    fortificationsRemoved += this.fortifications;
+                    this.fortifications = 0;
                     break;
                 case Token.Knight:
                     knightsRemoved += this.knights;
@@ -141,12 +142,12 @@ export class Territory {
             }
         }
 
-        return { castlesRemoved, knightsRemoved, enginesRemoved };
+        return { fortificationsRemoved, knightsRemoved, enginesRemoved };
     }
 
     changeOwner(newOwner: Player) {
         const gm = GameManager.instance;
-
+        if (this.owner) this.owner.removeTerritory(this);
         this.owner = newOwner;
         this.setTroops(true ? 1 : 0); // TODO: This should check the current phase to see if it's start of game
         newOwner.addTerritory(this);
