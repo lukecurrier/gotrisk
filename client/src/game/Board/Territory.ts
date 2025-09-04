@@ -1,4 +1,5 @@
 import { Player } from "../Player";
+import { Region } from "./Region";
 import { Token, BattleResult } from "../../utils/Utils";
 import { GameManager } from "../GameManager";
 
@@ -7,6 +8,7 @@ export class Territory {
     readonly coastal: boolean;
     readonly port: boolean // rather than do complicated bs, just add all territories with the same port as neighbors
     readonly castle: boolean;
+    private region: Region;
     private neighbors: Territory[];
     private troops: number;
     private owner?: Player;

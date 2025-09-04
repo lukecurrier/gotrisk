@@ -3,6 +3,11 @@
 
 import { assert } from "console";
 import type { Card } from "../game/Cards"
+import * as fs from 'fs';
+import { Map, MapName } from "../game/Board/Map";
+import { Continent } from "../game/Board/Continent";
+import { Region } from "../game/Board/Region";
+import { Territory } from "../game/Board/Territory";
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -108,6 +113,16 @@ export class BattleResult {
         //Do the initial roll and incorporate token effects
         //TODO add in pre-battle character card / maester card effects
 
+
+        //TODO add in pre-battle maester card effects / character card effects before this fight call
+        // but after the siegeEngine effects call from consructor b/c it initializes dice
+
+        this.rollForBattle();
+        this.applyFortificationEffects();
+        this.applyKnightEffects();
+
+        //TODO add in post-battle maester card effects / character card effects after this fight call
+
     }
 
     rollForBattle(): void { // Roll all dice
@@ -128,10 +143,8 @@ export class BattleResult {
         // Apply defensive fortification effects
         let defenderFortifications: number = this.countTokensOfType(Token.Fortification, this.defendingTokens);
 
-        for (let i = 0; i < defenderFortifications; i++) {
-            for (let d of this.defendDice) {
-                d.addX(1);
-            }
+        for (let d of this.defendDice) {
+            d.addX(defenderFortifications);
         }
     }
 
@@ -190,4 +203,49 @@ export function shuffleCards(deck: Card[]): Card[] {
   return deck;
 }
 
+export class MapCreator {
+    
+    
 
+
+
+    constructor() {
+        
+    }
+
+    createFrom(filePath: string): Map { //gotrisk\client\src\utils\mapConfig.txt
+        let mapName: MapName = "Westeros"; //TODO get from filePath name
+        let continents: Continent[] = [];
+        let regions: Region[] = [];
+        let territories: Territory[] = [];
+
+        /*
+        Config file formatted like:
+        ___CONTINENTS___
+        ContinentName
+        ...
+        ___REGIONS___
+        RegionName:ContinentName:OccupationBonus
+        ...
+        ___TERRITORIES___
+        TerritoryName:RegionName:Coastal(0/1):Port(0/1):Castle(0/1)
+        ...
+        ___CONNECTIONS___
+        T1Name:T2Name
+        ...
+        */
+
+        // only have to list connections one way (we'll assemble both links automatically)
+
+
+        try { //const lines = content.split(/\r?\n/); TODO for splitting into lines
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            console.log('File Content:', fileContent);
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return new Map(mapName, continents);
+    }
+
+}

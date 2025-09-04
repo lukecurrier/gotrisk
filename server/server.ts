@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { MapCreator } from "../client/src/utils/Utils";
 
 const app = express();
 const httpServer = createServer(app);
@@ -97,4 +98,12 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3000, () => console.log("Server running on http://localhost:3000"));
+//httpServer.listen(3000, () => console.log("Server running on http://localhost:3000"));
+httpServer.listen(3000, () => experimentation());
+
+function experimentation() {
+  
+  let mc: MapCreator = new MapCreator();
+  mc.createFrom("client\\src\\utils\\mapConfig.txt");
+}
+
