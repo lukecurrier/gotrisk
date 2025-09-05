@@ -98,12 +98,12 @@ io.on("connection", (socket) => {
   });
 });
 
-//httpServer.listen(3000, () => console.log("Server running on http://localhost:3000"));
-httpServer.listen(3000, () => experimentation());
+httpServer.listen(3000, () => console.log("Server running on http://localhost:3000"));
+/*httpServer.listen(3000, () => experimentation());
 
 function experimentation() {
   
   let mc: MapCreator = new MapCreator();
   mc.createFrom("client\\src\\utils\\mapConfig.txt");
-}
+}*/
 

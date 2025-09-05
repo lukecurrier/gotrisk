@@ -186,4 +186,8 @@ export class Territory {
     private setTroops(to: number) {
         this.troops = to;
     }
+
+    toString() {
+        console.log("TERRITORY: " + this.name + "\n");
+    }
 }

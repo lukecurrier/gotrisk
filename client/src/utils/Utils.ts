@@ -4,10 +4,11 @@
 import { assert } from "console";
 import type { Card } from "../game/Cards"
 import * as fs from 'fs';
-import { Map, MapName } from "../game/Board/Map";
+import { Map } from "../game/Board/Map";
 import { Continent } from "../game/Board/Continent";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
+import { EOL } from 'os';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -214,7 +215,7 @@ export class MapCreator {
     }
 
     createFrom(filePath: string): Map { //gotrisk\client\src\utils\mapConfig.txt
-        let mapName: MapName = "Westeros"; //TODO get from filePath name
+        let mapName: string = "Westeros"; //TODO get from filePath name
         let continents: Continent[] = [];
         let regions: Region[] = [];
         let territories: Territory[] = [];
@@ -225,7 +226,7 @@ export class MapCreator {
         ContinentName
         ...
         ___REGIONS___
-        RegionName:ContinentName:OccupationBonus
+        RegionName:ContinentName:OccupationBonus:ColorStringHexadecimal
         ...
         ___TERRITORIES___
         TerritoryName:RegionName:Coastal(0/1):Port(0/1):Castle(0/1)
@@ -237,14 +238,60 @@ export class MapCreator {
 
         // only have to list connections one way (we'll assemble both links automatically)
 
-
-        try { //const lines = content.split(/\r?\n/); TODO for splitting into lines
+        try { // yeah this is a mega shit function who cares rn
             const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            console.log('File Content:', fileContent);
+            const theContinentsPart = fileContent.split(`${EOL}___REGIONS___`)[0].split(`CONTINENTS___${EOL}`)[1];
+            //let numContinents: number = theContinentsPart.split(`${EOL}`).length;
+            
+            for (let i of theContinentsPart.split(`${EOL}`)) {
+                continents.push(new Continent(i, []));
+            }
+
+            const theRegionsPart = fileContent.split(`${EOL}___TERRITORIES___`)[0].split(`REGIONS___${EOL}`)[1];
+            //let numRegions: number = theRegionsPart.split(`${EOL}`).length;
+            //console.log('File Content:', theRegionsPart);
+            //console.log('Num continents:', numRegions);
+
+            for (let i of theRegionsPart.split(`${EOL}`)) {
+                const regionParts: string[] = i.split(":");
+                const regionName = regionParts[0];
+                const continent = continents.filter((continent, index, list) => continent.name == regionParts[1])[0];
+                const color = regionParts[3];
+                const occupationBonus = Number(regionParts[2]);
+                let region = new Region(regionName, occupationBonus, [], color)
+                regions.push(region);
+                continent.regions.push(region);
+            }
+
+            const theTerritoriesPart = fileContent.split(`${EOL}___CONNECTIONS___`)[0].split(`TERRITORIES___${EOL}`)[1];
+
+            for (let i of theTerritoriesPart.split(`${EOL}`)) {
+                const territoryParts: string[] = i.split(":");
+                const territoryName = territoryParts[0];
+                let regionItsIn = regions.filter((r, index, list) => r.name == territoryParts[1])[0];
+                const port = Number(territoryParts[3]) == 1 ? true : false;
+                const coastal = Number(territoryParts[2]) == 1 ? true : false;
+                const castle = Number(territoryParts[4]) == 1 ? true : false;
+                let territory = new Territory(territoryName, coastal, port, castle);
+                regionItsIn.territories.push(territory);
+                territories.push(territory);
+            }
+
+            const theConnectionsPart = fileContent.split(`${EOL}___CONNECTIONS___${EOL}`)[1];
+
+            for (let i of theConnectionsPart.split(`${EOL}`)) {
+                const ends: string[] = i.split(":");
+                const t1Name = ends[0];
+                const t2Name = ends[1].split(`${EOL}`)[0];
+                const t1 = territories.filter((t, index, list) => t.name == t1Name)[0];
+                const t2 = territories.filter((t, index, list) => t.name == t2Name)[0];
+                t1.addNeighbor(t2);
+            }
+
         } catch (error) {
             console.error('Error reading file:', error);
         }
-
+        //new Map(mapName, continents).toString();
         return new Map(mapName, continents);
     }
 

@@ -1,14 +1,19 @@
 import { Region } from "./Region";
 
-type ContinentName = "Westeros" | "Essos";
-
 export class Continent {
-    readonly name: ContinentName;
+    readonly name: string;
     readonly regions: Region[];
 
-    constructor(name: ContinentName, regions: Region[]) {
+    constructor(name: string, regions: Region[]) {
         this.name = name;
         this.regions = regions;
+    }
+
+    toString() {
+        console.log("CONTINENT: " + this.name + "\n");
+        for (let r of this.regions) {
+            r.toString();
+        }
     }
 }
     
