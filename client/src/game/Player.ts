@@ -151,4 +151,18 @@ export class Player {
         }
         return false;
     }
+
+    getTerritoryCount(): number {
+        return this.territories.length;
+    }
+
+    getCastleCount(): number {
+        const territoryCastleFilter = (t: Territory, i: number, tList: Territory []) => (t.castle);
+        return this.territories.filter(territoryCastleFilter).length;
+    }
+
+    getPortCount(): number {
+        const territoryPortFilter = (t: Territory, i: number, tList: Territory []) => (t.port);
+        return this.territories.filter(territoryPortFilter).length;
+    }
 }

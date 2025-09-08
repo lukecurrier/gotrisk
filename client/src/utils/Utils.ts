@@ -1,14 +1,16 @@
 // Could choose to have these be methods under specific classes, but have them here for now just for funsies
 // Random data structures and utility functions
 
-import { assert } from "console";
-import type { Card } from "../game/Cards"
+//import { assert } from "console";
 import * as fs from 'fs';
-import { Map } from "../game/Board/Map";
+import { EOL } from 'os';
 import { Continent } from "../game/Board/Continent";
+import { Map } from "../game/Board/Map";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import { EOL } from 'os';
+import type { Card, TerritoryCard } from "../game/Cards";
+import { Player } from '../game/Player';
+import { Map as HashMap } from 'immutable';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -204,11 +206,81 @@ export function shuffleCards(deck: Card[]): Card[] {
   return deck;
 }
 
+export function calculateBaseTroopDeploy(map:Map, player:Player): number {
+    let earnedTotal: number = 0;
+    const minimumTroopsToDeploy = 3;
+
+    // Territories + Castles / 3
+    earnedTotal += Math.floor((player.getTerritoryCount() + player.getCastleCount()) / 3);
+    // + Region Bonus
+    earnedTotal += calculateRegionBonus(map, player);
+    // Territory Card deploys not included here
+
+    return Math.min(earnedTotal, minimumTroopsToDeploy);
+}
+
+export function calculateRegionBonus(map: Map, player: Player): number {
+
+    let bonusSum = 0;
+    for (let c of map.continents) {
+        for (let r of c.regions) {
+            let playerControlsRegion = true; 
+            for (let t of r.territories) {
+                if (t.getOwner() !== player) {
+                    playerControlsRegion = false;
+                    break;
+                }
+            }
+            if (playerControlsRegion) {
+                bonusSum += r.regionBonus;
+            }
+        }
+    }
+
+    return bonusSum;
+}
+
+export function calculatePlayerIncome(map:Map, player:Player) {
+    return 100 * (player.getPortCount() + calculateBaseTroopDeploy(map, player) + calculateRegionBonus(map, player));
+}
+
+export function territorySetValue(territoryCards: TerritoryCard[]): number {
+    //return -1 if not a set, otherwise return how many troops they deploy for
+    let returnValue: number = -1;
+
+    if (territoryCards.length != 3) { // wrong number of territory cards
+        return returnValue;
+    }
+
+    const counts = [0, 0, 0]; // Fortification, Knight, Siege Engine in that order
+
+    for (let tc of territoryCards) {
+        if (tc.getToken() == Token.Fortification) {
+            counts[0] += 1;
+        }
+        if (tc.getToken() == Token.Knight) {
+            counts[1] += 1;
+        }
+        if (tc.getToken() == Token.SiegeEngine) {
+            counts[2] += 1;
+        }
+    }
+    if (counts.findIndex((n, index, list) => n==2) != -1) { // found a token type with 2, can't form a set
+        return returnValue;
+    }
+
+    if (counts[0] == counts[1]) { // we have three 1s, return 7 troops for one-of-each deploy type
+        return 7;
+    } else if (counts[0] == 3) { // 3 fortifications
+        return 6;
+    } else if (counts[1] == 3) { // 3 knights
+        return 4;
+    } else { // 3 siege engines
+        return 5;
+    }
+}
+
 export class MapCreator {
-    
-    
-
-
 
     constructor() {
         

@@ -114,6 +114,10 @@ export class TerritoryCard extends Card {
     protected effect(): void {
 
     }
+
+    getToken(): Token {
+        return this.token;
+    }
 }
 
 export class Deck<T extends Card> {
