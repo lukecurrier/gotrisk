@@ -104,6 +104,6 @@ httpServer.listen(3000, () => console.log("Server running on http://localhost:30
 function experimentation() {
   
   let mc: MapCreator = new MapCreator();
-  mc.createFrom("client\\src\\utils\\mapConfig.txt");
+  mc.createFrom("client\\src\\utils\\mapname.txt");
 }*/
 

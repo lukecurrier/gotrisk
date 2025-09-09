@@ -286,8 +286,9 @@ export class MapCreator {
         
     }
 
-    createFrom(filePath: string): Map { //gotrisk\client\src\utils\mapConfig.txt
-        let mapName: string = "Westeros"; //TODO get from filePath name
+    createFrom(filePath: string): Map { //gotrisk\client\src\utils\filename.txt
+        let numSegments = filePath.split("\\").length;
+        let mapName: string = filePath.split(".")[0].split("\\")[numSegments - 1];
         let continents: Continent[] = [];
         let regions: Region[] = [];
         let territories: Territory[] = [];

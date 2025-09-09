@@ -1,0 +1,133 @@
+___CONTINENTS___
+Essos
+___REGIONS___
+Andalos:Essos:4:FFFF00
+The Disputed Lands:Essos:2:FFFF0F
+Lands of Long Summer:Essos:1:F0FF00
+Jade Sea Coast:Essos:1:FFFF00
+The Dothraki Sea:Essos:4:0FFF0F
+Slaver's Bay:Essos:3:FF0000
+___TERRITORIES___
+Braavosian Coastlands:Andalos:1:1:1
+The Axe:Andalos:1:0:0
+Hills of Norvos:Andalos:0:0:0
+Forest of Qohor:Andalos:1:0:1
+The Flatlands:Andalos:1:1:1
+Upper Rhoyne:Andalos:0:0:0
+The Golden Fields:Andalos:0:0:0
+Myr:The Disputed Lands:1:1:0
+Lower Rhoyne:The Disputed Lands:0:0:0
+Tyrosh:The Disputed Lands:1:0:1
+Lys:The Disputed Lands:1:1:0
+The Orange Shore:The Disputed Lands:1:0:0
+Volantis:The Disputed Lands:1:1:1
+Valyria:Lands of Long Summer:1:0:1
+Oros:Lands of Long Summer:1:0:0
+The Sea of Sights:Lands of Long Summer:1:1:0
+Mantarys:Lands of Long Summer:1:0:1
+Sarnor:The Dothraki Sea:1:0:1
+Western Dothraki Sea:The Dothraki Sea:0:0:0
+Northern Dothraki Sea:The Dothraki Sea:1:0:0
+Eastern Dothraki Sea:The Dothraki Sea:1:0:0
+Lhazar:The Dothraki Sea:0:0:1
+Vaes Dothrak:The Dothraki Sea:0:0:1
+The Footprint:The Dothraki Sea:1:0:0
+Meereen:Slaver's Bay:1:1:1
+Yunkai:Slaver's Bay:1:0:1
+Astapor:Slaver's Bay:1:1:1
+Old Ghis:Slaver's Bay:1:0:0
+New Ghis:Slaver's Bay:1:1:0
+The Red Waste:Slaver's Bay:1:1:1
+Northern Jade Sea:Jade Sea Coast:1:0:0
+Samyrian:Jade Sea Coast:1:0:0
+Bayasabhad:Jade Sea Coast:1:0:0
+Qarth:Jade Sea Coast:1:1:1
+___CONNECTIONS___
+The Axe:Braavosian Coastlands
+The Axe:Hills of Norvos
+The Axe:Forest of Qohor
+Hills of Norvos:Upper Rhoyne
+Hills of Norvos:Braavosian Coastlands
+Hills of Norvos:Forest of Qohor
+Upper Rhoyne:The Golden Fields
+Upper Rhoyne:Lower Rhoyne
+Upper Rhoyne:Forest of Qohor
+Upper Rhoyne:The Flatlands
+Upper Rhoyne:Braavosian Coastlands
+The Golden Fields:Myr
+The Golden Fields:The Flatlands
+The Golden Fields:Lower Rhoyne
+Myr:Tyrosh
+Myr:The Flatlands
+Myr:Lower Rhoyne
+Myr:The Orange Shore
+Tyrosh:The Orange Shore
+The Orange Shore:Lys
+The Orange Shore:Volantis
+The Orange Shore:Lower Rhoyne
+Volantis:Lower Rhoyne
+Volantis:Mantarys
+Mantarys:The Sea of Sights
+Mantarys:Lower Rhoyne
+Mantarys:Western Dothraki Sea
+Mantarys:Meereen
+The Sea of Sights:Oros
+The Sea of Sights:Valyria
+Oros:Valyria
+Western Dothraki Sea:Forest of Qohor
+Western Dothraki Sea:Sarnor
+Western Dothraki Sea:Eastern Dothraki Sea
+Western Dothraki Sea:Northern Dothraki Sea
+Western Dothraki Sea:Lower Rhoyne
+Western Dothraki Sea:Meereen
+Eastern Dothraki Sea:Northern Dothraki Sea
+Eastern Dothraki Sea:Vaes Dothrak
+Eastern Dothraki Sea:Samyrian
+Eastern Dothraki Sea:The Red Waste
+Eastern Dothraki Sea:Lhazar
+Eastern Dothraki Sea:Meereen
+Eastern Dothraki Sea:The Footprint
+The Footprint:Northern Jade Sea
+The Footprint:Vaes Dothrak
+Lhazar:Meereen
+Lhazar:Yunkai
+Lhazar:The Red Waste
+The Red Waste:Samyrian
+The Red Waste:Bayasabhad
+The Red Waste:Qarth
+The Red Waste:Old Ghis
+The Red Waste:Astapor
+The Red Waste:Yunkai
+Old Ghis:New Ghis
+Old Ghis:Astapor
+Bayasabhad:Samyrian
+Bayasabhad:Qarth
+Samyrian:Northern Jade Sea
+Samyrian:Vaes Dothrak
+Yunkai:Meereen
+Yunkai:Astapor
+Vaes Dothrak:Northern Jade Sea
+Sarnor:Northern Dothraki Sea
+Sarnor:Forest of Qohor
+Forest of Qohor:Lower Rhoyne
+Braavosian Coastlands:The Flatlands
+Braavosian Coastlands:Myr
+Braavosian Coastlands:Tyrosh
+Braavosian Coastlands:Lys
+Braavosian Coastlands:Volantis
+The Flatlands:Tyrosh
+The Flatlands:Lys
+The Flatlands:Volantis
+Myr:Lys
+Myr:Volantis
+Lys:Volantis
+Qarth:Meereen
+Qarth:Astapor
+Qarth:New Ghis
+Qarth:Sea of Sights
+Meereen:Astapor
+Meereen:New Ghis
+Meereen:The Sea of Sights
+Astapor:New Ghis
+Astapor:The Sea of Sights
+New Ghis:The Sea of Sights
