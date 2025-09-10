@@ -11,6 +11,7 @@ import { Territory } from "../game/Board/Territory";
 import type { Card, TerritoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
 import { Map as HashMap } from 'immutable';
+import { CardEffect } from '../game/CardEffect';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -369,3 +370,47 @@ export class MapCreator {
     }
 
 }
+
+export class CardEffectStack {
+    private static effectsStack: CardEffectStack;
+    private stack: CardEffect[];
+
+    public static getInstance(): CardEffectStack {
+    if (!CardEffectStack.effectsStack) {
+      CardEffectStack.effectsStack = new CardEffectStack();
+    }
+      return CardEffectStack.effectsStack;
+    }
+
+    constructor() {
+        this.stack = [];
+        // TODO config default response delay and other stack vars here? or in game manager?
+    }
+
+    push(element: CardEffect): void {
+      this.stack.push(element);
+    }
+
+    pop(): CardEffect | undefined {
+      return this.stack.pop();
+    }
+
+    peek(): CardEffect | undefined {
+      return this.stack[this.stack.length - 1];
+    }
+
+    isEmpty(): boolean {
+      return this.stack.length === 0;
+    }
+
+    size(): number {
+      return this.stack.length;
+    }
+
+    clear(): void {
+      this.stack = [];
+    }
+}
+
+// TODO need a card creator that makes territory cards and links them to the territory objects in the map
+// Also need to make all the victory, territory, maester, character cards
