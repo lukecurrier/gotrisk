@@ -1,6 +1,7 @@
 import { Continent } from "./Board/Continent";
 import { GameManager } from "./GameManager";
 import { Player } from "./Player";
+import { Map } from "./Board/Map";
 
 export class LobbyManager {
   private players: Player[] = [];
@@ -40,8 +41,9 @@ export class LobbyManager {
 }
 
 export class GameSettings {
-    continents: Continent[]
+    map: Map;
     players: Player[]
+    activePlayerIndex: number;
 }
 
 const defaultSettings = new GameSettings()

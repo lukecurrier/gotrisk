@@ -10,7 +10,7 @@ import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
 import type { Card, TerritoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
-import { Map as HashMap } from 'immutable';
+//import { Map as HashMap } from 'immutable';
 import { CardEffect } from '../game/CardEffect';
 
 export type Port = 0 | 1 | 2 | 3
@@ -414,3 +414,4 @@ export class CardEffectStack {
 
 // TODO need a card creator that makes territory cards and links them to the territory objects in the map
 // Also need to make all the victory, territory, maester, character cards
+// And load them into game manager class
