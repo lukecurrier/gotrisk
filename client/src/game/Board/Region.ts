@@ -23,4 +23,12 @@ export class Region {
 
         return true 
     }
+
+    toString() {
+        console.log("REGION: " + this.name + "\n");
+        //console.log(this.territories.length);
+        for(let t of this.territories) {
+            t.toString();
+        }
+    }
 }

@@ -1,6 +1,8 @@
 import { Territory } from "../Board/Territory";
 import { Player } from "../Player";
 import { Token } from "../../utils/Utils";
+import { beforeEach, describe, it } from "node:test";
+import { expect, test } from 'vitest';
 
 describe("Territory", () => {
   let territoryA: Territory;
@@ -53,7 +55,7 @@ describe("Territory", () => {
 
   it("placeTokens and removeTokens works", () => {
     territoryA.placeTokens(1, 2, 3);
-    let removed = territoryA.removeTokens([Token.Castle, Token.Knight]);
+    let removed = territoryA.removeTokens([Token.Fortification, Token.Knight]);
     expect(removed).toEqual({ castlesRemoved: 1, knightsRemoved: 2, enginesRemoved: 0 });
 
     removed = territoryA.removeTokens([Token.SiegeEngine]);

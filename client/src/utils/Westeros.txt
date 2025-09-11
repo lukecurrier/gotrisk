@@ -1,0 +1,194 @@
+___CONTINENTS___
+Westeros
+___REGIONS___
+The North:Westeros:5:FFFF00
+The Riverlands:Westeros:2:FFFF0F
+The Iron Islands:Westeros:1:F0FF00
+The Vale of Arryn:Westeros:1:FFFF00
+The Westerlands:Westeros:2:0FFF0F
+The Crownlands:Westeros:2:FF0000
+The Stormlands:Westeros:1:00FF00
+The Reach:Westeros:4:FF00FF
+Dorne:Westeros:1:F00FFF
+___TERRITORIES___
+Skagos:The North:1:0:0
+The Gift:The North:1:0:0
+Karhold:The North:1:0:0
+The Dreadfort:The North:1:0:1
+Widow's Watch:The North:1:1:0
+Winterfell:The North:1:0:1
+Bear Island:The North:1:0:0
+Wolfswood:The North:1:1:0
+Barrowlands:The North:1:0:1
+Stoney Shore:The North:1:0:0
+The Neck:The North:1:0:0
+Cape Kraken:The North:1:1:0
+White Harbor:The North:1:1:0
+Harlaw:The Iron Islands:1:1:0
+Pyke:The Iron Islands:1:1:1
+The Fingers:The Vale of Arryn:1:0:0
+Gulltown:The Vale of Arryn:1:1:0
+The Eyrie:The Vale of Arryn:1:0:1
+Mountains of the Moon:The Vale of Arryn:1:0:0
+The Twins:The Riverlands:1:0:1
+The Trident:The Riverlands:1:1:0
+Riverrun:The Riverlands:1:1:0
+Harrenhal:The Riverlands:1:0:1
+Stoney Sept:The Riverlands:0:0:0
+The Crag:The Westerlands:1:0:0
+Silverhill:The Westerlands:0:0:0
+Golden Tooth:The Westerlands:0:0:0
+Casterly Rock:The Westerlands:1:1:1
+Crakehall:The Westerlands:1:0:1
+Crackclaw Point:The Crownlands:1:0:0
+Dragonstone:The Crownlands:1:1:1
+King's Landing:The Crownlands:1:1:1
+Kingswood:The Crownlands:1:0:0
+Storm's End:The Stormlands:1:1:1
+Dornish Marshes:The Stormlands:1:0:1
+Rainwood:The Stormlands:1:0:0
+Tarth:The Stormlands:1:0:0
+Blackwater Rush:The Reach:0:0:0
+The Mander:The Reach:0:0:1
+Searoad Marshes:The Reach:1:0:0
+Three Towers:The Reach:1:0:0
+The Arbor:The Reach:1:0:0
+Oldtown:The Reach:1:1:1
+Highgarden:The Reach:1:0:1
+Red Mountains:Dorne:1:0:0
+Sandstone:Dorne:1:0:1
+Greenblood:Dorne:1:0:0
+Sunspear:Dorne:1:1:1
+___CONNECTIONS___
+Bear Island:Winterfell
+Bear Island:Wolfswood
+Bear Island:Stoney Shore
+Stoney Shore:Wolfswood
+Stoney Shore:Barrowlands
+Winterfell:The Gift
+Winterfell:The Dreadfort
+Winterfell:Widow's Watch
+Winterfell:White Harbor
+Winterfell:Barrowlands
+Winterfell:Wolfswood
+The Gift:The Dreadfort
+The Gift:Karhold
+The Gift:Skagos
+Skagos:Karhold
+Karhold:The Dreadfort
+The Dreadfort:Widow's Watch
+Wolfswood:Barrowlands
+Barrowlands:The Neck
+Barrowlands:White Harbor
+The Neck:White Harbor
+The Neck:Cape Kraken
+The Neck:The Twins
+The Neck:Mountains of the Moon
+Mountains of the Moon:The Fingers
+Mountains of the Moon:The Eyrie
+Mountains of the Moon:The Trident
+Mountains of the Moon:Harrenhal
+The Eyrie:Gulltown
+The Twins:Mountains of the Moon
+The Twins:Harlaw
+The Twins:The Trident
+Harrenhal:The Trident
+Harrenhal:Riverrun
+Harrenhal:Stoney Sept
+Harrenhal:Blackwater Rush
+Harrenhal:King's Landing
+Stoney Sept:Riverrun
+Stoney Sept:Golden Tooth
+Stoney Sept:Casterly Rock
+Stoney Sept:Blackwater Rush
+Stoney Sept:Silverhill
+Silverhill:Casterly Rock
+Silverhill:Crakehall
+Silverhill:Searoad Marshes
+Silverhill:Blackwater Rush
+Blackwater Rush:King's Landing
+Blackwater Rush:Searoad Marshes
+Blackwater Rush:Highgarden
+Blackwater Rush:The Mander
+Blackwater Rush:Kingswood
+Kingswood:The Mander
+Kingswood:King's Landing
+Kingswood:Dragonstone
+Kingswood:Storm's End
+King's Landing:Crackclaw Point
+Crackclaw Point:Dragonstone
+Crakehall:Casterly Rock
+Crakehall:Searoad Marshes
+The Mander:Highgarden
+The Mander:Dornish Marshes
+The Mander:Storm's End
+Riverrun:Pyke
+Riverrun:The Trident
+Riverrun:The Crag
+Riverrun:Golden Tooth
+The Crag:Pyke
+The Crag:Golden Tooth
+The Crag:Casterly Rock
+Highgarden:Oldtown
+Highgarden:Red Mountains
+Highgarden:Three Towers
+Highgarden:Dornish Marshes
+Highgarden:Searoad Marshes
+Three Towers:The Arbor
+Three Towers:Red Mountains
+Three Towers:Oldtown
+The Arbor:Oldtown
+Dornish Marshes:Rainwood
+Dornish Marshes:Red Mountains
+Dornish Marshes:Storm's End
+Rainwood:Storm's End
+Rainwood:Tarth
+Tarth:Storm's End
+Red Mountains:Sandstone
+Red Mountains:Greenblood
+Greenblood:Sandstone
+Greenblood:Sunspear
+Golden Tooth:Casterly Rock
+Wolfswood:Cape Kraken
+Wolfswood:Pyke
+Wolfswood:Harlaw
+Wolfswood:Casterly Rock
+Wolfswood:Oldtown
+Wolfswood:The Trident
+Cape Kraken:Pyke
+Cape Kraken:Harlaw
+Cape Kraken:Casterly Rock
+Cape Kraken:Oldtown
+Cape Kraken:The Trident
+Pyke:Harlaw
+Pyke:Casterly Rock
+Pyke:Oldtown
+Pyke:The Trident
+Harlaw:The Neck
+Harlaw:Casterly Rock
+Harlaw:Oldtown
+Harlaw:The Trident
+Casterly Rock:Oldtown
+Casterly Rock:The Trident
+Oldtown:The Trident
+Widow's Watch:White Harbor
+Widow's Watch:Gulltown
+Widow's Watch:King's Landing
+Widow's Watch:Dragonstone
+Widow's Watch:Storm's End
+Widow's Watch:Sunspear
+White Harbor:Gulltown
+White Harbor:King's Landing
+White Harbor:Dragonstone
+White Harbor:Storm's End
+White Harbor:Sunspear
+Gulltown:King's Landing
+Gulltown:Dragonstone
+Gulltown:Storm's End
+Gulltown:Sunspear
+King's Landing:Dragonstone
+King's Landing:Storm's End
+King's Landing:Sunspear
+Dragonstone:Storm's End
+Dragonstone:Sunspear
+Storm's End:Sunspear

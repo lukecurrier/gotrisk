@@ -1,8 +1,17 @@
 // Could choose to have these be methods under specific classes, but have them here for now just for funsies
 // Random data structures and utility functions
 
-import { assert } from "console";
-import type { Card } from "../game/Cards"
+//import { assert } from "console";
+import * as fs from 'fs';
+import { EOL } from 'os';
+import { Continent } from "../game/Board/Continent";
+import { Map } from "../game/Board/Map";
+import { Region } from "../game/Board/Region";
+import { Territory } from "../game/Board/Territory";
+import type { Card, TerritoryCard } from "../game/Cards";
+import { Player } from '../game/Player';
+import { Map as HashMap } from 'immutable';
+import { CardEffect } from '../game/CardEffect';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -108,6 +117,16 @@ export class BattleResult {
         //Do the initial roll and incorporate token effects
         //TODO add in pre-battle character card / maester card effects
 
+
+        //TODO add in pre-battle maester card effects / character card effects before this fight call
+        // but after the siegeEngine effects call from consructor b/c it initializes dice
+
+        this.rollForBattle();
+        this.applyFortificationEffects();
+        this.applyKnightEffects();
+
+        //TODO add in post-battle maester card effects / character card effects after this fight call
+
     }
 
     rollForBattle(): void { // Roll all dice
@@ -128,10 +147,8 @@ export class BattleResult {
         // Apply defensive fortification effects
         let defenderFortifications: number = this.countTokensOfType(Token.Fortification, this.defendingTokens);
 
-        for (let i = 0; i < defenderFortifications; i++) {
-            for (let d of this.defendDice) {
-                d.addX(1);
-            }
+        for (let d of this.defendDice) {
+            d.addX(defenderFortifications);
         }
     }
 
@@ -190,4 +207,210 @@ export function shuffleCards(deck: Card[]): Card[] {
   return deck;
 }
 
+export function calculateBaseTroopDeploy(map:Map, player:Player): number {
+    let earnedTotal: number = 0;
+    const minimumTroopsToDeploy = 3;
 
+    // Territories + Castles / 3
+    earnedTotal += Math.floor((player.getTerritoryCount() + player.getCastleCount()) / 3);
+    // + Region Bonus
+    earnedTotal += calculateRegionBonus(map, player);
+    // Territory Card deploys not included here
+
+    return Math.min(earnedTotal, minimumTroopsToDeploy);
+}
+
+export function calculateRegionBonus(map: Map, player: Player): number {
+
+    let bonusSum = 0;
+    for (let c of map.continents) {
+        for (let r of c.regions) {
+            let playerControlsRegion = true; 
+            for (let t of r.territories) {
+                if (t.getOwner() !== player) {
+                    playerControlsRegion = false;
+                    break;
+                }
+            }
+            if (playerControlsRegion) {
+                bonusSum += r.regionBonus;
+            }
+        }
+    }
+
+    return bonusSum;
+}
+
+export function calculatePlayerIncome(map:Map, player:Player) {
+    return 100 * (player.getPortCount() + calculateBaseTroopDeploy(map, player) + calculateRegionBonus(map, player));
+}
+
+export function territorySetValue(territoryCards: TerritoryCard[]): number {
+    //return -1 if not a set, otherwise return how many troops they deploy for
+    let returnValue: number = -1;
+
+    if (territoryCards.length != 3) { // wrong number of territory cards
+        return returnValue;
+    }
+
+    const counts = [0, 0, 0]; // Fortification, Knight, Siege Engine in that order
+
+    for (let tc of territoryCards) {
+        if (tc.getToken() == Token.Fortification) {
+            counts[0] += 1;
+        }
+        if (tc.getToken() == Token.Knight) {
+            counts[1] += 1;
+        }
+        if (tc.getToken() == Token.SiegeEngine) {
+            counts[2] += 1;
+        }
+    }
+    if (counts.findIndex((n, index, list) => n==2) != -1) { // found a token type with 2, can't form a set
+        return returnValue;
+    }
+
+    if (counts[0] == counts[1]) { // we have three 1s, return 7 troops for one-of-each deploy type
+        return 7;
+    } else if (counts[0] == 3) { // 3 fortifications
+        return 6;
+    } else if (counts[1] == 3) { // 3 knights
+        return 4;
+    } else { // 3 siege engines
+        return 5;
+    }
+}
+
+export class MapCreator {
+
+    constructor() {
+        
+    }
+
+    createFrom(filePath: string): Map { //gotrisk\client\src\utils\filename.txt
+        let numSegments = filePath.split("\\").length;
+        let mapName: string = filePath.split(".")[0].split("\\")[numSegments - 1];
+        let continents: Continent[] = [];
+        let regions: Region[] = [];
+        let territories: Territory[] = [];
+
+        /*
+        Config file formatted like:
+        ___CONTINENTS___
+        ContinentName
+        ...
+        ___REGIONS___
+        RegionName:ContinentName:OccupationBonus:ColorStringHexadecimal
+        ...
+        ___TERRITORIES___
+        TerritoryName:RegionName:Coastal(0/1):Port(0/1):Castle(0/1)
+        ...
+        ___CONNECTIONS___
+        T1Name:T2Name
+        ...
+        */
+
+        // only have to list connections one way (we'll assemble both links automatically)
+
+        try { // yeah this is a mega shit function who cares rn
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const theContinentsPart = fileContent.split(`${EOL}___REGIONS___`)[0].split(`CONTINENTS___${EOL}`)[1];
+            //let numContinents: number = theContinentsPart.split(`${EOL}`).length;
+            
+            for (let i of theContinentsPart.split(`${EOL}`)) {
+                continents.push(new Continent(i, []));
+            }
+
+            const theRegionsPart = fileContent.split(`${EOL}___TERRITORIES___`)[0].split(`REGIONS___${EOL}`)[1];
+            //let numRegions: number = theRegionsPart.split(`${EOL}`).length;
+            //console.log('File Content:', theRegionsPart);
+            //console.log('Num continents:', numRegions);
+
+            for (let i of theRegionsPart.split(`${EOL}`)) {
+                const regionParts: string[] = i.split(":");
+                const regionName = regionParts[0];
+                const continent = continents.filter((continent, index, list) => continent.name == regionParts[1])[0];
+                const color = regionParts[3];
+                const occupationBonus = Number(regionParts[2]);
+                let region = new Region(regionName, occupationBonus, [], color)
+                regions.push(region);
+                continent.regions.push(region);
+            }
+
+            const theTerritoriesPart = fileContent.split(`${EOL}___CONNECTIONS___`)[0].split(`TERRITORIES___${EOL}`)[1];
+
+            for (let i of theTerritoriesPart.split(`${EOL}`)) {
+                const territoryParts: string[] = i.split(":");
+                const territoryName = territoryParts[0];
+                let regionItsIn = regions.filter((r, index, list) => r.name == territoryParts[1])[0];
+                const port = Number(territoryParts[3]) == 1 ? true : false;
+                const coastal = Number(territoryParts[2]) == 1 ? true : false;
+                const castle = Number(territoryParts[4]) == 1 ? true : false;
+                let territory = new Territory(territoryName, coastal, port, castle);
+                regionItsIn.territories.push(territory);
+                territories.push(territory);
+            }
+
+            const theConnectionsPart = fileContent.split(`${EOL}___CONNECTIONS___${EOL}`)[1];
+
+            for (let i of theConnectionsPart.split(`${EOL}`)) {
+                const ends: string[] = i.split(":");
+                const t1Name = ends[0];
+                const t2Name = ends[1].split(`${EOL}`)[0];
+                const t1 = territories.filter((t, index, list) => t.name == t1Name)[0];
+                const t2 = territories.filter((t, index, list) => t.name == t2Name)[0];
+                t1.addNeighbor(t2);
+            }
+
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+        //new Map(mapName, continents).toString();
+        return new Map(mapName, continents);
+    }
+
+}
+
+export class CardEffectStack {
+    private static effectsStack: CardEffectStack;
+    private stack: CardEffect[];
+
+    public static getInstance(): CardEffectStack {
+    if (!CardEffectStack.effectsStack) {
+      CardEffectStack.effectsStack = new CardEffectStack();
+    }
+      return CardEffectStack.effectsStack;
+    }
+
+    constructor() {
+        this.stack = [];
+        // TODO config default response delay and other stack vars here? or in game manager?
+    }
+
+    push(element: CardEffect): void {
+      this.stack.push(element);
+    }
+
+    pop(): CardEffect | undefined {
+      return this.stack.pop();
+    }
+
+    peek(): CardEffect | undefined {
+      return this.stack[this.stack.length - 1];
+    }
+
+    isEmpty(): boolean {
+      return this.stack.length === 0;
+    }
+
+    size(): number {
+      return this.stack.length;
+    }
+
+    clear(): void {
+      this.stack = [];
+    }
+}
+
+// TODO need a card creator that makes territory cards and links them to the territory objects in the map
+// Also need to make all the victory, territory, maester, character cards
