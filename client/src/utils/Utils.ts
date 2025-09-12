@@ -5,10 +5,10 @@
 import * as fs from 'fs';
 import { EOL } from 'os';
 import { Continent } from "../game/Board/Continent";
-import { Map } from "../game/Board/Map";
+import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import type { Card, TerritoryCard } from "../game/Cards";
+import { Card, TerritoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
 //import { Map as HashMap } from 'immutable';
 import { CardEffect } from '../game/CardEffect';
@@ -207,7 +207,7 @@ export function shuffleCards(deck: Card[]): Card[] {
   return deck;
 }
 
-export function calculateBaseTroopDeploy(map:Map, player:Player): number {
+export function calculateBaseTroopDeploy(map:Board, player:Player): number {
     let earnedTotal: number = 0;
     const minimumTroopsToDeploy = 3;
 
@@ -220,7 +220,7 @@ export function calculateBaseTroopDeploy(map:Map, player:Player): number {
     return Math.min(earnedTotal, minimumTroopsToDeploy);
 }
 
-export function calculateRegionBonus(map: Map, player: Player): number {
+export function calculateRegionBonus(map: Board, player: Player): number {
 
     let bonusSum = 0;
     for (let c of map.continents) {
@@ -241,7 +241,7 @@ export function calculateRegionBonus(map: Map, player: Player): number {
     return bonusSum;
 }
 
-export function calculatePlayerIncome(map:Map, player:Player) {
+export function calculatePlayerIncome(map:Board, player:Player) {
     return 100 * (player.getPortCount() + calculateBaseTroopDeploy(map, player) + calculateRegionBonus(map, player));
 }
 
@@ -281,13 +281,13 @@ export function territorySetValue(territoryCards: TerritoryCard[]): number {
     }
 }
 
-export class MapCreator {
+export class BoardCreator {
 
     constructor() {
         
     }
 
-    createFrom(filePath: string): Map { //gotrisk\client\src\utils\filename.txt
+    createFrom(filePath: string): Board { //gotrisk\client\src\utils\filename.txt
         let numSegments = filePath.split("\\").length;
         let mapName: string = filePath.split(".")[0].split("\\")[numSegments - 1];
         let continents: Continent[] = [];
@@ -366,10 +366,54 @@ export class MapCreator {
             console.error('Error reading file:', error);
         }
         //new Map(mapName, continents).toString();
-        return new Map(mapName, continents);
+        return new Board(mapName, continents);
     }
 
 }
+
+export class TerritoryCardReader {
+
+    constructor () {
+
+    }
+
+    createTerritoryCardDeckFrom(filePath: string, territoryObjects: Territory[]): TerritoryCard[] {
+        let territoryCardDeck: TerritoryCard[] = [];
+        const territoryTokenPairings: Map<string, Token> = this.readFrom(filePath);
+        for (let t of territoryObjects) {
+            territoryCardDeck.push(this.createTerritoryCard(t, territoryTokenPairings[t.name]));
+        }
+        return territoryCardDeck;
+    }
+
+    createTerritoryCard(territory: Territory, token: Token): TerritoryCard {
+        // TODO can add card play conditions here, maybe they differ between cards but I don't think so
+        return new TerritoryCard(0, territory.name, [], token,  territory);
+    }
+
+    readFrom(filePath: string): Map<string, Token> {
+        let territoryTokenPairings: Map<string, Token> = new Map<string, Token>();
+        const tokenNameMap: Map<string, Token> = new Map<string, Token>([
+            ["Fortification", Token.Fortification],
+            ["Knight", Token.Knight],
+            ["SiegeEngine", Token.SiegeEngine] ]);
+
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}`);
+            for (let line of lines) {
+                const parts: string[] = line.split(":");
+                territoryTokenPairings[parts[0]] = tokenNameMap[parts[1]];
+            } 
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return territoryTokenPairings;
+    }
+}
+
+    
 
 export class CardEffectStack {
     private static effectsStack: CardEffectStack;

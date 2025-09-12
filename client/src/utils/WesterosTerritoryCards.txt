@@ -1,0 +1,48 @@
+Skagos:SiegeEngine
+The Gift:Fortification
+Karhold:Knight
+The Dreadfort:Knight
+Widow's Watch:Fortification
+Winterfell:Knight
+Bear Island:Fortification
+Wolfswood:SiegeEngine
+Barrowlands:Fortification
+Stoney Shore:Knight
+The Neck:SiegeEngine
+Cape Kraken:Knight
+White Harbor:Knight
+Harlaw:Knight
+Pyke:SiegeEngine
+The Fingers:Fortification
+Gulltown:Knight
+The Eyrie:Knight
+Mountains of the Moon:SiegeEngine
+The Twins:Fortification
+The Trident:SiegeEngine
+Riverrun:SiegeEngine
+Harrenhal:Fortification
+Stoney Sept:Kngiht
+The Crag:SiegeEngine
+Silverhill:Fortification
+Golden Tooth:Knight
+Casterly Rock:Knight
+Crakehall:Fortification
+Crackclaw Point:SiegeEngine
+Dragonstone:Fortification
+King's Landing:Knight
+Kingswood:SiegeEngine
+Storm's End:Fortification
+Dornish Marshes:Knight
+Rainwood:SiegeEngine
+Tarth:Fortification
+Blackwater Rush:Fortification
+The Mander:SiegeEngine
+Searoad Marshes:Knight
+Three Towers:Fortification
+The Arbor:Fortification
+Oldtown:Knight
+Highgarden:SiegeEngine
+Red Mountains:Fortification
+Sandstone:Fortification
+Greenblood:Knight
+Sunspear:SiegeEngine

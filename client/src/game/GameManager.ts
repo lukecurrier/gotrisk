@@ -1,11 +1,11 @@
 import { Continent } from "./Board/Continent";
 import { Region } from "./Board/Region";
-import { Map } from "./Board/Map";
+import { Board } from "./Board/Board";
 import { Territory } from "./Board/Territory";
 import { Phase, PhaseManager } from "./GamePhase";
 import { GameSettings } from "./LobbyManager";
 import { Player } from "./Player";
-import { MaesterCard, TerritoryCard, VictoryCard } from "./Cards";
+import { MaesterCard, VictoryCard, TerritoryCard } from "./Cards";
 
 export class GameManager {
     private static _instance: GameManager;
@@ -16,13 +16,13 @@ export class GameManager {
     readonly territories: Territory[];
     readonly regions: Region[];
     readonly continents: Continent[];
-    readonly map: Map;
+    readonly map: Board;
     activePlayerIndex: number;
     readonly territoryCardDeck: TerritoryCard[];
     readonly maesterCardDeck: MaesterCard[];
     readonly victoryCardDeck: VictoryCard[];
 
-    private constructor(map: Map, players: Player[], activePlayerIndex) {
+    private constructor(map: Board, players: Player[], activePlayerIndex) {
         this.phaseManager = new PhaseManager(players);
         this.map = map;
         this.continents = map.continents;

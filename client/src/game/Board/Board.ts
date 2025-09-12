@@ -1,6 +1,6 @@
 import { Continent } from "./Continent";
 
-export class Map {
+export class Board {
     readonly name: string;
     readonly continents: Continent[];
 
@@ -10,7 +10,7 @@ export class Map {
     }
 
     toString() {
-        console.log("MAP: " + this.name + "\n");
+        console.log("BOARD: " + this.name + "\n");
         for (let c of this.continents) {
             c.toString();
         }
