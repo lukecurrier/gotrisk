@@ -50,7 +50,7 @@ export class GameManager {
     }
 
     // MARK: In-game methods
-    private getActivePlayer(): Player {
+    getActivePlayer(): Player {
         if (this.activePlayerIndex >= 0 && this.activePlayerIndex < this.players.length) {
             return this.players[this.activePlayerIndex];
         }

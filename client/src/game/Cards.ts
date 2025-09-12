@@ -24,7 +24,7 @@ export abstract class Card {
 
     isActive(): boolean { 
         if (!this.owner) { throw new Error("No owner!")}
-        return this.checks.every(check => check(this.owner!)); 
+        return this.checks.every(check => check(GameManager.instance, this.owner!)); 
     }
 
     play(): void {
