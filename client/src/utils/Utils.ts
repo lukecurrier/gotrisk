@@ -459,3 +459,5 @@ export class CardEffectStack {
 // TODO need a card creator that makes territory cards and links them to the territory objects in the map
 // Also need to make all the victory, territory, maester, character cards
 // And load them into game manager class
+// TODO refactor territory card maker to include the territory token type in the essos/westeros config file
+// and make em all at once
