@@ -3,153 +3,126 @@ import { GameManager } from "./GameManager";
 
 export type CardEffect = (player: Player) => void;
 
-export const CardEffects = { // TODO all
-
-    // MARK: Character Card Effects
+// MARK: Character Card Effects
+export const CharacterCardEffects = new Map<string, CardEffect>([
 
     // Play before you declare any invasions
     // You may make your maneuver at any point during your turn
-    EllariaSand: (): CardEffect => 
-        (player) => null,
+    ["Ellaria Sand", (player) => null],
+
 
     // Play when you declare an invasion
     // Add 1 to all your attack dice for the duration of the invasion
-    RobbStark: (): CardEffect => 
-        (player) => null,
+    ["Robb Stark", (player) => null],
 
     // Play when you declare an invasion
     // You win all ties for the duration of the invasion
-    LorasTyrell: (): CardEffect => 
-        (player) => null,
+    ["Loras Tyrell", (player) => null],
 
     // Play after rolling for a battle when you are the defender
     // Add 1 to all your defense dice for the battle
-    TywinLannister: (): CardEffect => 
-        (player) => null,
+    ["Tywin Lannister", (player) => null],
 
     // Play after rolling for a battle when you are the attacker
     // Change any one attack die to its highest value
-    JaimeLannister: (): CardEffect => 
-        (player) => null,
+    ["Jaime Lannister", (player) => null],
 
     // Play when an opponent declares an invasion against you
     // Add 1 to all defense dice for the duration of the invasion
-    StannisBaratheon: (): CardEffect => 
-        (player) => null,
+    ["Stannis Baratheon", (player) => null],
 
     // Play when you declare an invasion against a territory with a port
     // Add 1 to all attack dice for the duration of the invasion
-    DavosSeaworth: (): CardEffect => 
-        (player) => null,
+    ["Davos Seaworth", (player) => null],
 
     // Play after rolling for a battle when you are the defender
     // Change any one defense die to its highest value
-    NedStark: (): CardEffect => 
-        (player) => null,
+    ["Ned Stark", (player) => null],
 
     // Play if you conquered three or more territories this turn
     // You may draw an extra territory card
-    CerseiLannister: (): CardEffect => 
-        (player) => null,
+    ["Cersei Lannister", (player) => null],
 
     // Play when you declare an invasion
     // You may replace one six-sided die with an eight-sided die for the duration of the invasion
-    OberynMartell: (): CardEffect => 
-        (player) => null,
+    ["Oberyn Martell", (player) => null],
 
     // Play at the start of your maneuver phase
     // You may make one extra maneuver this turn
-    JonSnow: (): CardEffect => 
-        (player) => null,
+    ["Jon Snow", (player) => null],
 
     // Play when an opponent declares an invasion against you
     // You may replace all 6 sided dice with eight-sided dice for the duration of the invasion
-    Brienne: (): CardEffect => 
-        (player) => null,
+    ["Brienne", (player) => null],
 
     // Play when you draw a territory card
     // You may look at the top two cards; choose one to keep and discard the other
-    XaroXhoanDaxos: (): CardEffect => 
-        (player) => null,
+    ["Xaro Xhoan Daxos", (player) => null],
 
     // Play after rolling dice for a battle
     // You may force an opponent to re-roll one die of your choice once for the battle
-    MargaeryTyrell: (): CardEffect => 
-        (player) => null,
+    ["Margaery Tyrell", (player) => null],
 
     // Play if you conquered two or more territories with a castle or port this turn
     // You may draw an extra territory card
-    JorahMormont: (): CardEffect => 
-        (player) => null,
+    ["Jorah Mormont", (player) => null],
 
     // Play when you deploy reinforcements
     // You may deploy an extra army to a territory with a castle
-    RenlyBaratheon: (): CardEffect => 
-        (player) => null,
+    ["Renly Baratheon", (player) => null],
 
     // Play when you declare an invasion
     // You may replace all six-sided dice with eight-sided dice for the duration of the invasion
-    DaenerysTargaryen: (): CardEffect => 
-        (player) => null,
+    ["Daenerys Targaryen", (player) => null],
 
     // Play at the start of any invasion
     // You may re-roll all 1s once for the duration of the invasion
-    GreyWorm: (): CardEffect => 
-        (player) => null,
+    ["Grey Worm", (player) => null],
 
     // Play at the end of your turn if you did not conquer any territories
     // You may draw a territory card this turn
-    DoranMartell: (): CardEffect => 
-        (player) => null,
+    ["Doran Martell", (player) => null],
 
     // Play when an opponent declares an invasion against you
     // You may replace one six-sided die for the duration of the invasion
-    HizdarZoLoraq: (): CardEffect => 
-        (player) => null,
+    ["Hizdar Zo Loraq", (player) => null],
 
     // Play when you declare an invasion
     // Add one to your highest attack die for the duration of the invasion
-    KraznysMoNakloz: (): CardEffect => 
-        (player) => null,
+    ["Kraznys Mo Nakloz", (player) => null],
 
     // Play after rolling dice for a battle
     // Add one to all your dice for this battle
-    PyatPree: (): CardEffect => 
-        (player) => null,
+    ["Pyat Pree", (player) => null],
 
     // Play when an opponent declares an invasion against a territory you control with only one army
     // Add one army to that defending territory
-    CatelynStark: (): CardEffect => 
-        (player) => null,
+    ["Catelyn Stark", (player) => null],
 
     // Play after rolling for a battle when you are the defender
     // You may re-roll any defense dice one for the battle
-    BarristanSelmy: (): CardEffect => 
-        (player) => null,
+    ["Barristan Selmy", (player) => null],
 
     // Play when you buy a maester card
     // You may look at the top two cards; choose one to keep and discard the other
-    TyrionLannister: (): CardEffect => 
-        (player) => null,
+    ["Tyrion Lannister", (player) => null],
 
     // Play when an opponent declares an invasion against a territory you control with a castle or port
     // Add 1 to your highest defense die for the duration of the invasion
-    AeroHotah: (): CardEffect => 
-        (player) => null,
+    ["Aero Hotah", (player) => null],
 
     // Play before you declare any invasions
     // Force an opponent to discard a maester card at random
-    Melisandre: (): CardEffect => 
-        (player) => null,
+    ["Melisandre", (player) => null],
 
     // Play before you declare any invasions
     // The first time you conquer a territory from an opponent this turn you steal 100 gold from them
-    SalladorSaan: (): CardEffect => 
-        (player) => null,
+    ["Sallador Saan", (player) => null],
+]);
 
-}
 
-// MARK: Maester Card Effects 
+
+// MARK: Maester Card Effects TODO change to map
 export const MaesterCardEffects = {
     
     // Play before you declare invasions for a turn

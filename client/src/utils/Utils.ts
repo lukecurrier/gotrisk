@@ -8,10 +8,10 @@ import { Continent } from "../game/Board/Continent";
 import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import { Card, TerritoryCard } from "../game/Cards";
+import { Card, CharacterCard, TerritoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
 //import { Map as HashMap } from 'immutable';
-import { CardEffect } from '../game/CardEffect';
+import { CardEffect, CharacterCardEffects } from '../game/CardEffect';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -371,6 +371,32 @@ export class BoardCreator {
 
 }
 
+export class CharacterCardReader {
+
+    constructor () {
+
+    }
+
+    createCharacterDeckFrom(filePath: string): CharacterCard[] {
+
+        let characters: CharacterCard[] = [];
+        
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}`);
+            for (let line of lines) {
+                const parts: string[] = line.split(":");
+                characters.push(new CharacterCard(0, parts[0], [], Number(parts[1]), CharacterCardEffects[parts[0]]));
+            } //TODO add checks
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return characters;
+    }
+
+}
+
 export class TerritoryCardReader {
 
     constructor () {
@@ -412,8 +438,7 @@ export class TerritoryCardReader {
         return territoryTokenPairings;
     }
 }
-
-    
+   
 
 export class CardEffectStack {
     private static effectsStack: CardEffectStack;
