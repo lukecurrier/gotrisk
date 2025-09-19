@@ -24,7 +24,7 @@ export abstract class Card {
 
     isActive(): boolean { 
         if (!this.owner) { throw new Error("No owner!")}
-        return this.checks.every(check => check(GameManager.instance, this.owner!)); 
+        return this.checks.every(check => check(this.owner!)); 
     }
 
     play(): void {
@@ -64,11 +64,13 @@ export class CharacterCard extends Card {
 
 export class MaesterCard extends Card {
     readonly price: number;
+    readonly cardEffect: CardEffect;
 
-    constructor(id: number, name: string, checks: CardCheck[], price: number) {
+    constructor(id: number, name: string, checks: CardCheck[], price: number, effect: CardEffect) {
         super(id, name, checks);
         this.price = price;
         this.type = CardType.Maester;
+        this.cardEffect = effect;
     }
 
     override play(): void {

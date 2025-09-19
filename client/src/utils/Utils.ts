@@ -8,10 +8,13 @@ import { Continent } from "../game/Board/Continent";
 import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import { Card, CharacterCard, TerritoryCard } from "../game/Cards";
+import { Card, CharacterCard, MaesterCard, TerritoryCard, VictoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
 //import { Map as HashMap } from 'immutable';
-import { CardEffect, CharacterCardEffects } from '../game/CardEffect';
+import { CardEffect } from '../game/CardEffect';
+import { CharacterCards } from '../game/CharacterCards';
+import { MaesterCards } from '../game/MaesterCards';
+import { VictoryCards } from '../game/VictoryCards';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -384,15 +387,62 @@ export class CharacterCardReader {
         try {
             const fileContent: string = fs.readFileSync(filePath, 'utf-8');
             const lines: string[] = fileContent.split(`${EOL}`);
-            for (let line of lines) {
-                const parts: string[] = line.split(":");
-                characters.push(new CharacterCard(0, parts[0], [], Number(parts[1]), CharacterCardEffects[parts[0]]));
-            } //TODO add checks
+            for (let characterName of lines) {
+                characters.push(CharacterCards.filter((cc, index, list) => cc.name === characterName)[0]);
+            }
         } catch (error) {
             console.error('Error reading file:', error);
         }
 
         return characters;
+    }
+
+}
+
+export class MaesterCardReader {
+
+    constructor () {
+
+    }
+
+    createMaesterCardDeckFrom(filePath: string): MaesterCard[] {
+        let maesters: MaesterCard[] = [];
+        
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}`);
+            for (let mName of lines) {
+                maesters.push(MaesterCards.filter((mc, index, list) => mc.name === mName)[0]);
+            }
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return maesters;
+    }
+
+}
+
+export class VictoryCardReader {
+
+    constructor () {
+
+    }
+
+    createVictoryCardDeckFrom(filePath: string): VictoryCard[] { // TODO make them here since the values are configurable
+        let victoryConditions: VictoryCard[] = [];
+        
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}`);
+            for (let vName of lines) {
+                victoryConditions.push(VictoryCards.filter((vc, index, list) => vc.name === vName)[0]);
+            }
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return victoryConditions;
     }
 
 }

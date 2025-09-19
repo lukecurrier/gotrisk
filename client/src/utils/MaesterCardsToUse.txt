@@ -1,0 +1,36 @@
+Pirate Ship Fleet:1
+Desperate Ambush:1
+Lead Into A Trap:1
+Preparing For War:2
+Reinforce Bulwarks:2
+Spider's Sabotage:1
+Bribery:1
+A Sworn Sword:2
+Strength Of Steel:1
+Castle Walls:1
+Weapons of War:1
+Sickness in the Ranks:1
+Mass Desertion:1
+A Web of Lies:1
+Taken Captive:1
+Valryian Steel:1
+Shifting Alliance:1
+Establish the High Ground:1
+Confusion in the Ranks:1
+Mourning the Fallen:1
+Winter is Coming:1
+Cut Off Supply Lines:1
+Fortified Ports:1
+Hired Thieves:1
+Best Laid Plans:1
+Unplanned Losses:1
+A Call to Arms:1
+Raid the Countryside:1
+Valar Morghulis:1
+Rally The Smallfolk:1
+Wed for Peace:1
+Stragetic Withdrawl:1
+A Temporary Truce:1
+Freefolk Uprising:1
+Blood Magic:1
+Call in Your Banners:1
