@@ -2,10 +2,12 @@ import { Continent } from "./Board/Continent";
 import { GameManager } from "./GameManager";
 import { Player } from "./Player";
 import { Board } from "./Board/Board";
+import { CharacterCard, MaesterCard, TerritoryCard, VictoryCard } from "./Cards";
+import { BoardCreator, CharacterCardReader, MaesterCardReader, VictoryCardReader } from "../utils/Utils";
 
 export class LobbyManager {
   private players: Player[] = [];
-  private settings: GameSettings = defaultSettings;
+  private settings: GameSettings;
   private playerReady: Record<string, boolean> = {};
 
   addPlayer(player: Player) {
@@ -35,15 +37,33 @@ export class LobbyManager {
       throw new Error("Not all players are ready");
     }
 
-    GameManager.create(this.settings);
+    GameManager.create(this.settings, this.players, 0);
     return GameManager.instance;
   }
 }
 
 export class GameSettings {
     map: Board;
-    players: Player[]
     activePlayerIndex: number;
-}
+    victoryDeck: VictoryCard[];
+    territoryDeck: TerritoryCard[];
+    maesterDeck: MaesterCard[];
+    characterDeck: CharacterCard[];
+    victoryTarget: number;
 
-const defaultSettings = new GameSettings()
+    constructor(charactersFilePath: string,
+      mapFilePath: string,
+      maestersFilePath: string,
+      victoryFilePath: string) {
+
+      const mapInfo = new BoardCreator().createFrom(mapFilePath);
+      this.map = mapInfo.board;
+      this.territoryDeck = mapInfo.territoryCards;
+      this.characterDeck = new CharacterCardReader().createCharacterDeckFrom(charactersFilePath);
+      this.maesterDeck = new MaesterCardReader().createMaesterCardDeckFrom(maestersFilePath);
+      const victoryInfo = new VictoryCardReader().createVictoryCardDeckFrom(victoryFilePath);
+      this.victoryDeck = victoryInfo.victoryCards;
+      this.victoryTarget = victoryInfo.pointsToWin;
+    }
+
+}

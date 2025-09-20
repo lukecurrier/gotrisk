@@ -32,8 +32,8 @@ export class GameManager {
         this.activePlayerIndex = activePlayerIndex;
     }
 
-    static create(settings: GameSettings) {
-        GameManager._instance = new GameManager(settings.map, settings.players, settings.activePlayerIndex);
+    static create(settings: GameSettings, players: Player[], activePlayerIndex: number) {
+        GameManager._instance = new GameManager(settings.map, players, activePlayerIndex);
         return GameManager._instance;
     }
 

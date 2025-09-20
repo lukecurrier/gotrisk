@@ -290,12 +290,14 @@ export class BoardCreator {
         
     }
 
-    createFrom(filePath: string): Board { //gotrisk\client\src\utils\filename.txt
+    createFrom(filePath: string): {board: Board, territoryCards: TerritoryCard[]} { //gotrisk\client\src\utils\filename.txt
         let numSegments = filePath.split("\\").length;
         let mapName: string = filePath.split(".")[0].split("\\")[numSegments - 1];
         let continents: Continent[] = [];
         let regions: Region[] = [];
         let territories: Territory[] = [];
+        let territoryCards: TerritoryCard[] = [];
+
 
         /*
         Config file formatted like:
@@ -341,6 +343,9 @@ export class BoardCreator {
             }
 
             const theTerritoriesPart = fileContent.split(`${EOL}___CONNECTIONS___`)[0].split(`TERRITORIES___${EOL}`)[1];
+            let tokenNameMap = new Map<string, Token> ([["KNIGHT", Token.Knight], 
+                ["FORTIFICATION", Token.Fortification],
+                ["SIEGEENGINE", Token.SiegeEngine]]);
 
             for (let i of theTerritoriesPart.split(`${EOL}`)) {
                 const territoryParts: string[] = i.split(":");
@@ -349,9 +354,12 @@ export class BoardCreator {
                 const port = Number(territoryParts[3]) == 1 ? true : false;
                 const coastal = Number(territoryParts[2]) == 1 ? true : false;
                 const castle = Number(territoryParts[4]) == 1 ? true : false;
+                const tokenType: Token = tokenNameMap[territoryParts[5]];
                 let territory = new Territory(territoryName, coastal, port, castle);
+                let territoryCard = new TerritoryCard(0, territoryName, [], tokenType, territory); //TODO all cards have same checks add here
                 regionItsIn.territories.push(territory);
                 territories.push(territory);
+                territoryCards.push(territoryCard);
             }
 
             const theConnectionsPart = fileContent.split(`${EOL}___CONNECTIONS___${EOL}`)[1];
@@ -369,7 +377,8 @@ export class BoardCreator {
             console.error('Error reading file:', error);
         }
         //new Map(mapName, continents).toString();
-        return new Board(mapName, continents);
+        let board = new Board(mapName, continents);
+        return {board, territoryCards};
     }
 
 }
@@ -449,49 +458,7 @@ export class VictoryCardReader {
     }
 
 }
-
-export class TerritoryCardReader {
-
-    constructor () {
-
-    }
-
-    createTerritoryCardDeckFrom(filePath: string, territoryObjects: Territory[]): TerritoryCard[] {
-        let territoryCardDeck: TerritoryCard[] = [];
-        const territoryTokenPairings: Map<string, Token> = this.readFrom(filePath);
-        for (let t of territoryObjects) {
-            territoryCardDeck.push(this.createTerritoryCard(t, territoryTokenPairings[t.name]));
-        }
-        return territoryCardDeck;
-    }
-
-    createTerritoryCard(territory: Territory, token: Token): TerritoryCard {
-        // TODO can add card play conditions here, maybe they differ between cards but I don't think so
-        return new TerritoryCard(0, territory.name, [], token,  territory);
-    }
-
-    readFrom(filePath: string): Map<string, Token> {
-        let territoryTokenPairings: Map<string, Token> = new Map<string, Token>();
-        const tokenNameMap: Map<string, Token> = new Map<string, Token>([
-            ["FORTIFICATION", Token.Fortification],
-            ["KNIGHT", Token.Knight],
-            ["SIEGEENGINE", Token.SiegeEngine] ]);
-
-        try {
-            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const lines: string[] = fileContent.split(`${EOL}`);
-            for (let line of lines) {
-                const parts: string[] = line.split(":");
-                territoryTokenPairings[parts[0]] = tokenNameMap[parts[1]];
-            } 
-        } catch (error) {
-            console.error('Error reading file:', error);
-        }
-
-        return territoryTokenPairings;
-    }
-}
-   
+  
 
 export class CardEffectStack {
     private static effectsStack: CardEffectStack;
@@ -533,9 +500,3 @@ export class CardEffectStack {
       this.stack = [];
     }
 }
-
-// TODO need a card creator that makes territory cards and links them to the territory objects in the map
-// Also need to make all the victory, territory, maester, character cards
-// And load them into game manager class
-// TODO refactor territory card maker to include the territory token type in the essos/westeros config file
-// and make em all at once
