@@ -14,7 +14,7 @@ import { Player } from '../game/Player';
 import { CardEffect } from '../game/CardEffect';
 import { CharacterCards } from '../game/CharacterCards';
 import { MaesterCards } from '../game/MaesterCards';
-import { VictoryCards } from '../game/VictoryCards';
+import { VictoryCardCheckMap } from '../game/VictoryCardChecks';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -429,20 +429,23 @@ export class VictoryCardReader {
 
     }
 
-    createVictoryCardDeckFrom(filePath: string): VictoryCard[] { // TODO make them here since the values are configurable
-        let victoryConditions: VictoryCard[] = [];
+    createVictoryCardDeckFrom(filePath: string): {victoryCards: VictoryCard[], pointsToWin: number} { // Have to make them here bc point values are configurable
+        let victoryCards: VictoryCard[] = [];
+        let pointsToWin: number = 0;
         
         try {
             const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const lines: string[] = fileContent.split(`${EOL}`);
-            for (let vName of lines) {
-                victoryConditions.push(VictoryCards.filter((vc, index, list) => vc.name === vName)[0]);
+            const lines: string[] = fileContent.split(`${EOL}___VICTORY_CARDS___${EOL}`);
+            pointsToWin = Number(fileContent.split(`${EOL}___POINTS_TO_WIN___${EOL}`)[1].split(`${EOL}___VICTORY_CARDS___${EOL}`)[0]);
+            for (let line of lines) {
+                const parts: string[] = line.split(":");
+                victoryCards.push(new VictoryCard(0, parts[0], VictoryCardCheckMap[parts[0]], Number(parts[1])));
             }
         } catch (error) {
             console.error('Error reading file:', error);
         }
 
-        return victoryConditions;
+        return {victoryCards, pointsToWin}
     }
 
 }
@@ -470,9 +473,9 @@ export class TerritoryCardReader {
     readFrom(filePath: string): Map<string, Token> {
         let territoryTokenPairings: Map<string, Token> = new Map<string, Token>();
         const tokenNameMap: Map<string, Token> = new Map<string, Token>([
-            ["Fortification", Token.Fortification],
-            ["Knight", Token.Knight],
-            ["SiegeEngine", Token.SiegeEngine] ]);
+            ["FORTIFICATION", Token.Fortification],
+            ["KNIGHT", Token.Knight],
+            ["SIEGEENGINE", Token.SiegeEngine] ]);
 
         try {
             const fileContent: string = fs.readFileSync(filePath, 'utf-8');

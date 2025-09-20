@@ -1,28 +1,28 @@
-Ellaria Sand
-Robb Stark
-Loras Tyrell
-Tywin Lannister
-Jaime Lannister
-Stannis Baratheon
-Davos Seaworth
-Ned Stark
-Cersei Lannister
-Oberyn Martell
-Jon Snow
-Brienne
-Xaro Xhoan Daxos
-Margaery Tyrell
-Jorah Mormont
-Renly Baratheon
-Daenerys Targaryen
-Grey Worm
-Doran Martell
-Hizdar Zo Loraq
-Kraznys Mo Nakloz
-Pyat Pree
-Catelyn Stark
-Barristan Selmy
-Tyrion Lannister
-Aero Hotah
-Melisandre
-Sallador Saan
+ELLARIA SAND
+ROBB STARK
+LORAS TYRELL
+TYWIN LANNISTER
+JAIME LANNISTER
+STANNIS BARATHEON
+DAVOS SEAWORTH
+NED STARK
+CERSEI LANNISTER
+OBERYN MARTELL
+JON SNOW
+BRIENNE
+XARO XHOAN DAXOS
+MARGAERY TYRELL
+JORAH MORMONT
+RENLY BARATHEON
+DAENERYS TARGARYEN
+GREY WORM
+DORAN MARTELL
+HIZDAR ZO LORAQ
+KRAZNYS MO NAKLOZ
+PYAT PREE
+CATELYN STARK
+BARRISTAN SELMY
+TYRION LANNISTER
+AERO HOTAH
+MELISANDRE
+SALLADOR SAAN

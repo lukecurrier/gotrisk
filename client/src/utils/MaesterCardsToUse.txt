@@ -1,36 +1,36 @@
-Pirate Ship Fleet:1
-Desperate Ambush:1
-Lead Into A Trap:1
-Preparing For War:2
-Reinforce Bulwarks:2
-Spider's Sabotage:1
-Bribery:1
-A Sworn Sword:2
-Strength Of Steel:1
-Castle Walls:1
-Weapons of War:1
-Sickness in the Ranks:1
-Mass Desertion:1
-A Web of Lies:1
-Taken Captive:1
-Valryian Steel:1
-Shifting Alliance:1
-Establish the High Ground:1
-Confusion in the Ranks:1
-Mourning the Fallen:1
-Winter is Coming:1
-Cut Off Supply Lines:1
-Fortified Ports:1
-Hired Thieves:1
-Best Laid Plans:1
-Unplanned Losses:1
-A Call to Arms:1
-Raid the Countryside:1
-Valar Morghulis:1
-Rally The Smallfolk:1
-Wed for Peace:1
-Stragetic Withdrawl:1
-A Temporary Truce:1
-Freefolk Uprising:1
-Blood Magic:1
-Call in Your Banners:1
+PIRATE SHIP FLEET:1
+DESPERATE AMBUSH:1
+LEAD INTO A TRAP:1
+PREPARING FOR WAR:2
+REINFORCE BULWARKS:2
+SPIDER'S SABOTAGE:1
+BRIBERY:1
+A SWORN SWORD:2
+STRENGTH OF STEEL:1
+CASTLE WALLS:1
+WEAPONS OF WAR:1
+SICKNESS IN THE RANKS:1
+MASS DESERTION:1
+A WEB OF LIES:1
+TAKEN CAPTIVE:1
+VALRYIAN STEEL:1
+SHIFTING ALLIANCE:1
+ESTABLISH THE HIGH GROUND:1
+CONFUSION IN THE RANKS:1
+MOURNING THE FALLEN:1
+WINTER IS COMING:1
+CUT OFF SUPPLY LINES:1
+FORTIFIED PORTS:1
+HIRED THIEVES:1
+BEST LAID PLANS:1
+UNPLANNED LOSSES:1
+A CALL TO ARMS:1
+RAID THE COUNTRYSIDE:1
+VALAR MORGHULIS:1
+RALLY THE SMALLFOLK:1
+WED FOR PEACE:1
+STRAGETIC WITHDRAWL:1
+A TEMPORARY TRUCE:1
+FREEFOLK UPRISING:1
+BLOOD MAGIC:1
+CALL IN YOUR BANNERS:1
