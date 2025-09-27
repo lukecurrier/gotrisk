@@ -22,7 +22,9 @@ export class GameManager {
     readonly maesterCardDeck: MaesterCard[];
     readonly victoryCardDeck: VictoryCard[];
 
-    private constructor(map: Board, players: Player[], activePlayerIndex) {
+    capitalTroops: number = 3;
+
+    private constructor(map: Board, players: Player[], activePlayerIndex: number) {
         this.phaseManager = new PhaseManager(players);
         this.map = map;
         this.continents = map.continents;
@@ -30,6 +32,7 @@ export class GameManager {
         this.territories = this.regions.flatMap(region => region.territories);
         this.players = players;
         this.activePlayerIndex = activePlayerIndex;
+        // TODO: initialize decks
     }
 
     static create(settings: GameSettings, players: Player[], activePlayerIndex: number) {
@@ -47,6 +50,10 @@ export class GameManager {
         this.guardPreGameOnly()
         let player = new Player(id, name, color);
         this.players.push(player);
+    }
+
+    isGameOngoing() {
+        return this.phaseManager.currentPhase.gameOngoing;
     }
 
     // MARK: In-game methods

@@ -72,10 +72,10 @@ export class Die {
 }
 
 export class BattleResult {
-    attackDice: Die[];
-    defendDice: Die[];
-    attackingTokens: Token[];
-    defendingTokens: Token[];
+    attackDice: Die[] = [];
+    defendDice: Die[] = [];
+    attackingTokens: Token[] = [];
+    defendingTokens: Token[] = [];
 
     // ONLY USE countTokensOfType, for counting tokens of type t in a list
     filterToType = (t: Token) => ((innerToken: Token, i: number, list: Token[]) => t == innerToken ? 1 : 0);
@@ -355,7 +355,7 @@ export class BoardCreator {
                 const coastal = Number(territoryParts[2]) == 1 ? true : false;
                 const castle = Number(territoryParts[4]) == 1 ? true : false;
                 const tokenType: Token = tokenNameMap[territoryParts[5]];
-                let territory = new Territory(territoryName, coastal, port, castle);
+                let territory = new Territory(territoryName, coastal, port, castle, region);
                 let territoryCard = new TerritoryCard(0, territoryName, [], tokenType, territory); //TODO all cards have same checks add here
                 regionItsIn.territories.push(territory);
                 territories.push(territory);

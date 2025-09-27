@@ -4,9 +4,9 @@ import { Token, BattleResult } from "../../utils/Utils";
 import { GameManager } from "../GameManager";
 
 export class Territory {
-    readonly name: string
+    readonly name: string;
     readonly coastal: boolean;
-    readonly port: boolean // rather than do complicated bs, just add all territories with the same port as neighbors
+    readonly port: boolean;
     readonly castle: boolean;
     private region: Region;
     private neighbors: Territory[];
@@ -17,10 +17,11 @@ export class Territory {
     private fortifications: number;
     private siegeEngines: number;
 
-    constructor(name: string, coastal: boolean, port: boolean, castle: boolean) {
+    constructor(name: string, coastal: boolean, port: boolean, castle: boolean, region: Region) {
         this.name = name;
         this.neighbors = [];
         this.coastal = coastal;
+        this.region = region;
         this.port = port;
         this.castle = castle;
         this.troops = 0;
@@ -89,7 +90,9 @@ export class Territory {
 
     // MARK: Setters
     addNeighbor(that: Territory) {
-        // TODO: add a start of game check?
+        const gm = GameManager.instance;
+        if (gm.isGameOngoing()) throw new Error("Game is ongoing!")
+
         if (!this.isNeighboring(that)) { 
             this.neighbors.push(that) 
             that.addNeighbor(this)
@@ -102,7 +105,8 @@ export class Territory {
         this.capital = player;
         player.setCapital(this)
 
-        this.setTroops(3) // TODO this might not be hard-codable forever, if starting setup is modifiable
+        const gm = GameManager.instance;
+        this.setTroops(gm.capitalTroops)
     }
 
     placeTroops(troops: number) {
@@ -151,7 +155,7 @@ export class Territory {
         const gm = GameManager.instance;
         if (this.owner) this.owner.removeTerritory(this);
         this.owner = newOwner;
-        this.setTroops(true ? 1 : 0); // TODO: This should check the current phase to see if it's start of game
+        this.setTroops(gm.isGameOngoing() ? 0 : 1); 
         newOwner.addTerritory(this);
     }
 
