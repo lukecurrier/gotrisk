@@ -165,4 +165,23 @@ export class Player {
         const territoryPortFilter = (t: Territory, i: number, tList: Territory []) => (t.port);
         return this.territories.filter(territoryPortFilter).length;
     }
+
+    hasAllTokens(): boolean {
+        let hasTokens: number[] = [0,0,0]; // Fortification, Knight, Siege Engine in that order
+        
+        for(let t of this.territories) {
+            if(t.getFortifications() > 0) {
+                hasTokens[0] = 1;
+            }
+            if(t.getKnights() > 0) {
+                hasTokens[1] = 1;
+            }
+            if(t.getSiegeEngines() > 0) {
+                hasTokens[2] = 1;
+            }
+        }
+
+        return hasTokens[0] + hasTokens[1] + hasTokens[2] == 3;
+    
+    }
 }

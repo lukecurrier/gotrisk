@@ -5,13 +5,16 @@
 import * as fs from 'fs';
 import { EOL } from 'os';
 import { Continent } from "../game/Board/Continent";
-import { Map } from "../game/Board/Map";
+import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import type { Card, TerritoryCard } from "../game/Cards";
+import { Card, CharacterCard, MaesterCard, TerritoryCard, VictoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
-import { Map as HashMap } from 'immutable';
+//import { Map as HashMap } from 'immutable';
 import { CardEffect } from '../game/CardEffect';
+import { CharacterCards } from '../game/CharacterCards';
+import { MaesterCards } from '../game/MaesterCards';
+import { VictoryCardCheckMap } from '../game/VictoryCardChecks';
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -207,7 +210,7 @@ export function shuffleCards(deck: Card[]): Card[] {
   return deck;
 }
 
-export function calculateBaseTroopDeploy(map:Map, player:Player): number {
+export function calculateBaseTroopDeploy(map:Board, player:Player): number {
     let earnedTotal: number = 0;
     const minimumTroopsToDeploy = 3;
 
@@ -220,7 +223,7 @@ export function calculateBaseTroopDeploy(map:Map, player:Player): number {
     return Math.min(earnedTotal, minimumTroopsToDeploy);
 }
 
-export function calculateRegionBonus(map: Map, player: Player): number {
+export function calculateRegionBonus(map: Board, player: Player): number {
 
     let bonusSum = 0;
     for (let c of map.continents) {
@@ -241,7 +244,7 @@ export function calculateRegionBonus(map: Map, player: Player): number {
     return bonusSum;
 }
 
-export function calculatePlayerIncome(map:Map, player:Player) {
+export function calculatePlayerIncome(map:Board, player:Player) {
     return 100 * (player.getPortCount() + calculateBaseTroopDeploy(map, player) + calculateRegionBonus(map, player));
 }
 
@@ -281,18 +284,20 @@ export function territorySetValue(territoryCards: TerritoryCard[]): number {
     }
 }
 
-export class MapCreator {
+export class BoardCreator {
 
     constructor() {
         
     }
 
-    createFrom(filePath: string): Map { //gotrisk\client\src\utils\filename.txt
+    createFrom(filePath: string): {board: Board, territoryCards: TerritoryCard[]} { //gotrisk\client\src\utils\filename.txt
         let numSegments = filePath.split("\\").length;
         let mapName: string = filePath.split(".")[0].split("\\")[numSegments - 1];
         let continents: Continent[] = [];
         let regions: Region[] = [];
         let territories: Territory[] = [];
+        let territoryCards: TerritoryCard[] = [];
+
 
         /*
         Config file formatted like:
@@ -338,6 +343,9 @@ export class MapCreator {
             }
 
             const theTerritoriesPart = fileContent.split(`${EOL}___CONNECTIONS___`)[0].split(`TERRITORIES___${EOL}`)[1];
+            let tokenNameMap = new Map<string, Token> ([["KNIGHT", Token.Knight], 
+                ["FORTIFICATION", Token.Fortification],
+                ["SIEGEENGINE", Token.SiegeEngine]]);
 
             for (let i of theTerritoriesPart.split(`${EOL}`)) {
                 const territoryParts: string[] = i.split(":");
@@ -346,9 +354,12 @@ export class MapCreator {
                 const port = Number(territoryParts[3]) == 1 ? true : false;
                 const coastal = Number(territoryParts[2]) == 1 ? true : false;
                 const castle = Number(territoryParts[4]) == 1 ? true : false;
+                const tokenType: Token = tokenNameMap[territoryParts[5]];
                 let territory = new Territory(territoryName, coastal, port, castle);
+                let territoryCard = new TerritoryCard(0, territoryName, [], tokenType, territory); //TODO all cards have same checks add here
                 regionItsIn.territories.push(territory);
                 territories.push(territory);
+                territoryCards.push(territoryCard);
             }
 
             const theConnectionsPart = fileContent.split(`${EOL}___CONNECTIONS___${EOL}`)[1];
@@ -366,10 +377,88 @@ export class MapCreator {
             console.error('Error reading file:', error);
         }
         //new Map(mapName, continents).toString();
-        return new Map(mapName, continents);
+        let board = new Board(mapName, continents);
+        return {board, territoryCards};
     }
 
 }
+
+export class CharacterCardReader {
+
+    constructor () {
+
+    }
+
+    createCharacterDeckFrom(filePath: string): CharacterCard[] {
+
+        let characters: CharacterCard[] = [];
+        
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}`);
+            for (let characterName of lines) {
+                characters.push(CharacterCards.filter((cc, index, list) => cc.name === characterName)[0]);
+            }
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return characters;
+    }
+
+}
+
+export class MaesterCardReader {
+
+    constructor () {
+
+    }
+
+    createMaesterCardDeckFrom(filePath: string): MaesterCard[] {
+        let maesters: MaesterCard[] = [];
+        
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}`);
+            for (let mName of lines) {
+                maesters.push(MaesterCards.filter((mc, index, list) => mc.name === mName)[0]);
+            }
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return maesters;
+    }
+
+}
+
+export class VictoryCardReader {
+
+    constructor () {
+
+    }
+
+    createVictoryCardDeckFrom(filePath: string): {victoryCards: VictoryCard[], pointsToWin: number} { // Have to make them here bc point values are configurable
+        let victoryCards: VictoryCard[] = [];
+        let pointsToWin: number = 0;
+        
+        try {
+            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const lines: string[] = fileContent.split(`${EOL}___VICTORY_CARDS___${EOL}`);
+            pointsToWin = Number(fileContent.split(`${EOL}___POINTS_TO_WIN___${EOL}`)[1].split(`${EOL}___VICTORY_CARDS___${EOL}`)[0]);
+            for (let line of lines) {
+                const parts: string[] = line.split(":");
+                victoryCards.push(new VictoryCard(0, parts[0], VictoryCardCheckMap[parts[0]], Number(parts[1])));
+            }
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+
+        return {victoryCards, pointsToWin}
+    }
+
+}
+  
 
 export class CardEffectStack {
     private static effectsStack: CardEffectStack;
@@ -411,6 +500,3 @@ export class CardEffectStack {
       this.stack = [];
     }
 }
-
-// TODO need a card creator that makes territory cards and links them to the territory objects in the map
-// Also need to make all the victory, territory, maester, character cards
