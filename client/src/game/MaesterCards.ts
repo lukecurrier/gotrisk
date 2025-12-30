@@ -1,3 +1,5 @@
+import { GameTimeMarker } from "../utils/Utils";
+import { CardChecks } from "./CardCheck";
 import { MaesterCard } from "./Cards";
 
 export const MaesterCards: MaesterCard [] = [
@@ -5,7 +7,8 @@ export const MaesterCards: MaesterCard [] = [
     // You may declare invasions from territories you control with a port against any territories with a coastline border this turn
     new MaesterCard(0,
         "Pirate Ship Fleet",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions),
+            CardChecks.isPlayerTurn()],
         100,
         (player) => null),
     
@@ -13,7 +16,7 @@ export const MaesterCards: MaesterCard [] = [
     // Roll a d6, destroy floor((rollResult + 1) / 2) attacking armies
     new MaesterCard(0,
         "Desperate Ambush",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeABattle)],
         200,
         (player) => null),
     
@@ -21,7 +24,7 @@ export const MaesterCards: MaesterCard [] = [
     // All attacking armies are destroyed
     new MaesterCard(0,
         "Lead Into A Trap",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeABattle)],
         300,
         (player) => null),
     
@@ -29,7 +32,7 @@ export const MaesterCards: MaesterCard [] = [
     // Place three armies, one each in up to three different territories you control 
     new MaesterCard(0,
         "Preparing For War",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         200,
         (player) => null),
     
@@ -37,7 +40,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add a Fortification to a territory you control
     new MaesterCard(0,
         "Reinforce Bulwarks",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         100,
         (player) => null),
     
@@ -45,7 +48,7 @@ export const MaesterCards: MaesterCard [] = [
     // Cancel that card's effect
     new MaesterCard(0,
         "Spider's Sabotage",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.OpponentPlaysAMaesterCard)],
         200,
         (player) => null),
     
@@ -53,7 +56,7 @@ export const MaesterCards: MaesterCard [] = [
     // Give that player 200 gold and that territory cannot be invaded this turn
     new MaesterCard(0,
         "Bribery",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
     
@@ -61,7 +64,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add a Knight to a territory you control
     new MaesterCard(0,
         "A Sworn Sword",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         100,
         (player) => null),
     
@@ -69,7 +72,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add 1 to your highest die roll for the duration of the invasion
     new MaesterCard(0,
         "Strength Of Steel",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
     
@@ -77,7 +80,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add 1 to your highest defense die for the duration of the invasion
     new MaesterCard(0,
         "Castle Walls",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
     
@@ -85,7 +88,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add a Siege Engine to a territory you control
     new MaesterCard(0,
         "Weapons of War",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         100,
         (player) => null),
     
@@ -93,7 +96,7 @@ export const MaesterCards: MaesterCard [] = [
     // Draw and discard a territory card. Destroy one army in each territory controlled by an opponent in that territory's region
     new MaesterCard(0,
         "Sickness in the Ranks",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
     
@@ -101,7 +104,7 @@ export const MaesterCards: MaesterCard [] = [
     // Reveal the top two cards of the territory card deck. Destroy half of the armies in each of those territories, rounded down, if controlled by an opponent
     new MaesterCard(0,
         "Mass Desertion",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         200,
         (player) => null),
     
@@ -109,7 +112,7 @@ export const MaesterCards: MaesterCard [] = [
     // Draw one maester card at random from an opponent and add it to your hand
     new MaesterCard(0,
         "A Web of Lies",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
     
@@ -118,7 +121,7 @@ export const MaesterCards: MaesterCard [] = [
     // Until that player pays you 500 gold as ransom to return the character, that character's ability cannot be used.
     new MaesterCard(0,
         "Taken Captive",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
     
@@ -126,7 +129,7 @@ export const MaesterCards: MaesterCard [] = [
     // Change any one dice to its highest value
     new MaesterCard(0,
         "Valryian Steel",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.AfterRollingDiceForAnyReason)],
         100,
         (player) => null),
     
@@ -134,7 +137,7 @@ export const MaesterCards: MaesterCard [] = [
     // Destroy up to two attacking armies. Add two armies to teh defending territory.
     new MaesterCard(0,
         "Shifting Alliance",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeABattle)],
         400,
         (player) => null),
     
@@ -142,7 +145,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add 1 to all your dice rolls this turn, until that opponent captures the defending territory
     new MaesterCard(0,
         "Establish the High Ground",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
     
@@ -150,7 +153,7 @@ export const MaesterCards: MaesterCard [] = [
     // Each opponent must discard one maester card at random
     new MaesterCard(0,
         "Confusion in the Ranks",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
     
@@ -158,7 +161,7 @@ export const MaesterCards: MaesterCard [] = [
     // Costs to use character abilities and maester cards are doubled for all opopnents until the start of your next turn
     new MaesterCard(0,
         "Mourning the Fallen",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         300,
         (player) => null),
     
@@ -167,7 +170,7 @@ export const MaesterCards: MaesterCard [] = [
     // Then you detroy one of your armies. One army must remain in each territory.
     new MaesterCard(0,
         "Winter is Coming",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
     
@@ -176,7 +179,7 @@ export const MaesterCards: MaesterCard [] = [
     // Roll a six sided die. Remove up to that many armies from the chosen territory. One must remain.
     new MaesterCard(0,
         "Cut Off Supply Lines",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
     
@@ -184,7 +187,7 @@ export const MaesterCards: MaesterCard [] = [
     // Add one to your higtest defense die for the duration of the invasion
     new MaesterCard(0,
         "Fortified Ports",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
     
@@ -192,7 +195,7 @@ export const MaesterCards: MaesterCard [] = [
     // You may steal up to 200 gold from each opponent
     new MaesterCard(0,
         "Hired Thieves",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         200,
         (player) => null),
     
@@ -200,7 +203,7 @@ export const MaesterCards: MaesterCard [] = [
     // All opponents roll a d6, lowest rollers lose 1 victory point (10% of victory total)
     new MaesterCard(0,
         "Best Laid Plans",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],        
         200,
         (player) => null),
     
@@ -209,7 +212,7 @@ export const MaesterCards: MaesterCard [] = [
     // One army must remain 
     new MaesterCard(0,
         "Unplanned Losses",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         300,
         (player) => null),
     
@@ -217,7 +220,7 @@ export const MaesterCards: MaesterCard [] = [
     // Roll a d6, add that many armies to the defending territory
     new MaesterCard(0,
         "A Call to Arms",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         300,
         (player) => null),
     
@@ -225,7 +228,7 @@ export const MaesterCards: MaesterCard [] = [
     // If you conquer the territory, you also steal up to 300 gold from the opponent who controlled it
     new MaesterCard(0,
         "Raid the Countryside",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
     
@@ -233,7 +236,7 @@ export const MaesterCards: MaesterCard [] = [
     // Kill any one character, removing them from the game
     new MaesterCard(0,
         "Valar Morghulis",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],        
         500,
         (player) => null),
     
@@ -242,7 +245,7 @@ export const MaesterCards: MaesterCard [] = [
     // When you control this territory, you may reveal the card and place the armies on that territory
     new MaesterCard(0,
         "Rally The Smallfolk",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
     
@@ -250,7 +253,7 @@ export const MaesterCards: MaesterCard [] = [
     // Cancel the invasion, and that opponent cannot conquer any territories from you for the remainder of this turn
     new MaesterCard(0,
         "Wed for Peace",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         400,
         (player) => null),
     
@@ -258,7 +261,7 @@ export const MaesterCards: MaesterCard [] = [
     // Remove all of your armies but one from the territory being invaded and place them on any other territory you control
     new MaesterCard(0,
         "Stragetic Withdrawl",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
     
@@ -266,7 +269,7 @@ export const MaesterCards: MaesterCard [] = [
     // That territory cannot be invaded this turn until that player conquers a territory from another player
     new MaesterCard(0,
         "A Temporary Truce",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
     
@@ -274,7 +277,7 @@ export const MaesterCards: MaesterCard [] = [
     // That player recieves only half their initial amount of gold / army income, rounded down
     new MaesterCard(0,
         "Freefolk Uprising",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         300,
         (player) => null),
     
@@ -282,7 +285,7 @@ export const MaesterCards: MaesterCard [] = [
     // Choose a character and roll a d6. If you roll a 3 or higher, remove that character from the game.
     new MaesterCard(0,
         "Blood Magic",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         200,
         (player) => null),
     
@@ -290,7 +293,7 @@ export const MaesterCards: MaesterCard [] = [
     // Roll a d6, add that many armies to your reinforcement this turn
     new MaesterCard(0,
         "Call in Your Banners",
-        [],
+        [CardChecks.isRightGameTime(GameTimeMarker.Reinforcements)],
         300,
         (player) => null),
 ];

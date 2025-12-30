@@ -2,8 +2,8 @@
 // Random data structures and utility functions
 
 //import { assert } from "console";
-import * as fs from 'fs';
-import { EOL } from 'os';
+// import * as fs from 'fs';
+// import { EOL } from 'os';
 import { Continent } from "../game/Board/Continent";
 import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
@@ -15,6 +15,11 @@ import { CardEffect } from '../game/CardEffect';
 import { CharacterCards } from '../game/CharacterCards';
 import { MaesterCards } from '../game/MaesterCards';
 import { VictoryCardCheckMap } from '../game/VictoryCardChecks';
+import { EssosMap } from '../utils/Essos';
+import { Characters } from "./CharactersToUse";
+import { Maesters } from "./MaesterCardsToUse";
+import { VictoryCards } from "./VictoryCardsToUse";
+import { CardCheck, CardChecks } from "../game/CardCheck";
 
 export type Port = 0 | 1 | 2 | 3
 
@@ -22,6 +27,25 @@ export enum Token {
     Fortification,
     Knight,
     SiegeEngine,
+}
+
+export enum GameTimeMarker {
+    AnyTime,
+    OpponentPlaysAMaesterCard,
+    StartOfTurn,
+    TurnInTerritoryCards,
+    Reinforcements,
+    BeforeBuyingCards,
+    GetTerritoryCards,
+    BuyMaesterCards,
+    BeforeDeclaringInvasions,
+    BeforeAnInvasion,
+    BeforeABattle,
+    AfterRollingDiceForAnyReason,
+    AfterRollingDiceForABattle,
+    Maneuver,
+    TurnInVictoryCards,
+    EndOfTurn
 }
 
 export function randInt(low: number, high: number): number {
@@ -318,20 +342,21 @@ export class BoardCreator {
         // only have to list connections one way (we'll assemble both links automatically)
 
         try { // yeah this is a mega shit function who cares rn
-            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const theContinentsPart = fileContent.split(`${EOL}___REGIONS___`)[0].split(`CONTINENTS___${EOL}`)[1];
-            //let numContinents: number = theContinentsPart.split(`${EOL}`).length;
+            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const fileContent: string = EssosMap;
+            const theContinentsPart = fileContent.split(`\n___REGIONS___`)[0].split(`CONTINENTS___\n`)[1];
+            //let numContinents: number = theContinentsPart.split(`\n`).length;
             
-            for (let i of theContinentsPart.split(`${EOL}`)) {
+            for (let i of theContinentsPart.split(`\n`)) {
                 continents.push(new Continent(i, []));
             }
 
-            const theRegionsPart = fileContent.split(`${EOL}___TERRITORIES___`)[0].split(`REGIONS___${EOL}`)[1];
-            //let numRegions: number = theRegionsPart.split(`${EOL}`).length;
+            const theRegionsPart = fileContent.split(`\n___TERRITORIES___`)[0].split(`REGIONS___\n`)[1];
+            //let numRegions: number = theRegionsPart.split(`\n`).length;
             //console.log('File Content:', theRegionsPart);
             //console.log('Num continents:', numRegions);
 
-            for (let i of theRegionsPart.split(`${EOL}`)) {
+            for (let i of theRegionsPart.split(`\n`)) {
                 const regionParts: string[] = i.split(":");
                 const regionName = regionParts[0];
                 const continent = continents.filter((continent, index, list) => continent.name == regionParts[1])[0];
@@ -342,32 +367,32 @@ export class BoardCreator {
                 continent.regions.push(region);
             }
 
-            const theTerritoriesPart = fileContent.split(`${EOL}___CONNECTIONS___`)[0].split(`TERRITORIES___${EOL}`)[1];
+            const theTerritoriesPart = fileContent.split(`\n___CONNECTIONS___`)[0].split(`TERRITORIES___\n`)[1];
             let tokenNameMap = new Map<string, Token> ([["KNIGHT", Token.Knight], 
                 ["FORTIFICATION", Token.Fortification],
                 ["SIEGEENGINE", Token.SiegeEngine]]);
 
-            for (let i of theTerritoriesPart.split(`${EOL}`)) {
+            for (let i of theTerritoriesPart.split(`\n`)) {
                 const territoryParts: string[] = i.split(":");
                 const territoryName = territoryParts[0];
                 let regionItsIn = regions.filter((r, index, list) => r.name == territoryParts[1])[0];
                 const port = Number(territoryParts[3]) == 1 ? true : false;
                 const coastal = Number(territoryParts[2]) == 1 ? true : false;
                 const castle = Number(territoryParts[4]) == 1 ? true : false;
-                const tokenType: Token = tokenNameMap[territoryParts[5]];
+                const tokenType: Token = tokenNameMap.get(territoryParts[5])!;
                 let territory = new Territory(territoryName, coastal, port, castle, regionItsIn);
-                let territoryCard = new TerritoryCard(0, territoryName, [], tokenType, territory); //TODO all cards have same checks add here
+                let territoryCard = new TerritoryCard(0, territoryName, [CardChecks.isRightGameTime(GameTimeMarker.TurnInTerritoryCards)], tokenType, territory); //TODO all cards have same checks add here
                 regionItsIn.territories.push(territory);
                 territories.push(territory);
                 territoryCards.push(territoryCard);
             }
 
-            const theConnectionsPart = fileContent.split(`${EOL}___CONNECTIONS___${EOL}`)[1];
+            const theConnectionsPart = fileContent.split(`\n___CONNECTIONS___\n`)[1];
 
-            for (let i of theConnectionsPart.split(`${EOL}`)) {
+            for (let i of theConnectionsPart.split(`\n`)) {
                 const ends: string[] = i.split(":");
                 const t1Name = ends[0];
-                const t2Name = ends[1].split(`${EOL}`)[0];
+                const t2Name = ends[1].split(`\n`)[0];
                 const t1 = territories.filter((t, index, list) => t.name == t1Name)[0];
                 const t2 = territories.filter((t, index, list) => t.name == t2Name)[0];
                 t1.addNeighbor(t2);
@@ -394,8 +419,9 @@ export class CharacterCardReader {
         let characters: CharacterCard[] = [];
         
         try {
-            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const lines: string[] = fileContent.split(`${EOL}`);
+            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const fileContent: string = Characters;
+            const lines: string[] = fileContent.split(`\n`);
             for (let characterName of lines) {
                 characters.push(CharacterCards.filter((cc, index, list) => cc.name === characterName)[0]);
             }
@@ -418,8 +444,9 @@ export class MaesterCardReader {
         let maesters: MaesterCard[] = [];
         
         try {
-            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const lines: string[] = fileContent.split(`${EOL}`);
+            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const fileContent = Maesters;
+            const lines: string[] = fileContent.split(`\n`);
             for (let mName of lines) {
                 maesters.push(MaesterCards.filter((mc, index, list) => mc.name === mName)[0]);
             }
@@ -443,12 +470,14 @@ export class VictoryCardReader {
         let pointsToWin: number = 0;
         
         try {
-            const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const lines: string[] = fileContent.split(`${EOL}___VICTORY_CARDS___${EOL}`);
-            pointsToWin = Number(fileContent.split(`${EOL}___POINTS_TO_WIN___${EOL}`)[1].split(`${EOL}___VICTORY_CARDS___${EOL}`)[0]);
+            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
+            const fileContent: string = VictoryCards;
+            const lines: string[] = fileContent.split(`\n___VICTORY_CARDS___\n`);
+            pointsToWin = Number(fileContent.split(`\n___POINTS_TO_WIN___\n`)[1].split(`\n___VICTORY_CARDS___\n`)[0]);
             for (let line of lines) {
                 const parts: string[] = line.split(":");
-                victoryCards.push(new VictoryCard(0, parts[0], VictoryCardCheckMap[parts[0]], Number(parts[1])));
+                const checks: CardCheck[] = VictoryCardCheckMap.get(parts[0])!;
+                victoryCards.push(new VictoryCard(0, parts[0], checks.concat([CardChecks.isRightGameTime(GameTimeMarker.TurnInVictoryCards)]), Number(parts[1])));
             }
         } catch (error) {
             console.error('Error reading file:', error);
@@ -456,7 +485,7 @@ export class VictoryCardReader {
 
         return {victoryCards, pointsToWin}
     }
-
+  //TODO streamline all this shit
 }
   
 
@@ -476,7 +505,7 @@ export class CardEffectStack {
         // TODO config default response delay and other stack vars here? or in game manager?
     }
 
-    push(element: CardEffect): void {
+    push(element: CardEffect): void { //todo maybe give the stack a time marker and only add if matches?
       this.stack.push(element);
     }
 
