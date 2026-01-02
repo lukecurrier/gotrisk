@@ -1,3 +1,4 @@
+import { CardEffect, CardEffects } from "./CardEffect";
 import { Player } from "./Player";
 
 export abstract class Phase {
@@ -9,58 +10,109 @@ export abstract class Phase {
   abstract readonly name: string;
   abstract readonly gameOngoing: boolean;
 
+  protected players: Player[];
+
+  protected permanentEffects: CardEffect[] | undefined;
+  protected turnCycleEffects: CardEffect[] | undefined;
+  protected endOfTurnEffects: CardEffect[] | undefined;
+  protected combatEffects: CardEffect[] | undefined;
+  protected invasionEffects: CardEffect[] | undefined;
+  protected battleEffects: CardEffect[] | undefined;
+
   enter?(): void;
-  exit?(): void;
 
   abstract next(): Phase;
+
+  addPermanentEffect(e: CardEffect) {
+    if (this.permanentEffects === null || this.permanentEffects === undefined) {
+      this.permanentEffects = [];
+    }
+    this.permanentEffects.push(e);
+  }
+
+  addTurnCycleEffect(e: CardEffect) {
+    if (this.turnCycleEffects === null || this.turnCycleEffects === undefined) {
+      this.turnCycleEffects = [];
+    }
+    this.turnCycleEffects.push(e);
+  }
+
+  addEndOfTurnEffect(e: CardEffect) {
+    if (this.endOfTurnEffects === null || this.endOfTurnEffects === undefined) {
+      this.endOfTurnEffects = [];
+    }
+    this.endOfTurnEffects.push(e);
+  }
+
+  addInvasionEffect(e: CardEffect) {
+    if (this.invasionEffects === null || this.invasionEffects === undefined) {
+      this.invasionEffects = [];
+    }
+    this.invasionEffects.push(e);
+  }
+
+  addBattleEffect(e: CardEffect) {
+    if (this.battleEffects === null || this.battleEffects === undefined) {
+      this.battleEffects = [];
+    }
+    this.battleEffects.push(e);
+  }
+
+  addPlayer(p: Player) {
+    this.players.push(p);
+  }
+
+  getPlayers() {
+    return this.players;
+  }
 }
 
 export class PhaseManager {
-  playerAcks: Record<string, boolean>;
   currentPhase: Phase;
 
   constructor(players: Player[]) {
     this.currentPhase = new InitPhase();
-    this.playerAcks = Object.fromEntries(players.map(p => [p.id, false]));
   }
 
-  acknowledge(player: Player) {
-    this.playerAcks[player.id] = true;
-
-    if (Object.values(this.playerAcks).every(v => v)) {
-      this.transitionPhases();
-    }
-  }
-
-  needsAction(player:Player) {
-    this.playerAcks[player.id] = false;
+  getCurrentPhase() {
+    return this.currentPhase;
   }
 
   transitionPhases() {
+    // prompt player responses
     this.currentPhase = this.currentPhase.next();
-
-    for (const id in this.playerAcks) {
-      this.playerAcks[id] = false;
-    }
+    // now that we're in a new phase, prompt again
   }
 }
 
-
+// This phase comprises the setup - players getting into the lobby, etc. 
+// Once all players have been added and the Start Game button is pressed with everyone readied up, the game starts
 export class InitPhase extends Phase {
-  name: string;
-  gameOngoing: boolean;
+  readonly name = "Init"
+  readonly gameOngoing = false;
+
   next(): Phase {
-    throw new Error("Method not implemented.");
+    return new SetupPhase(this.getPlayers()); 
   }
-  
 }
 
+/* This phase is for players to: 
+  - Pick player order
+  - Assign/draft house or characters
+  - Assign/draft territories
+  - Place capitols
+  - Place troops
+  - Give turn order handicaps
+*/
 export class SetupPhase extends Phase {
   readonly name = "Setup";
   readonly gameOngoing = true;
 
-  constructor(private players: Player[]) {
+  constructor(players: Player[]) {
     super();
+    for (const player of players) {
+      this.addPlayer(player);
+    }
   }
 
   enter() {
@@ -68,7 +120,45 @@ export class SetupPhase extends Phase {
   }
 
   next(): Phase {
-    return new SetupPhase(this.players); // TODO: This is self referential lol add the rest of em
+    return new TurnPhase();
   }
+}
+
+export class TurnPhase extends Phase {
+  name: string;
+  gameOngoing: boolean;
+  next(): Phase {
+    throw new Error("Method not implemented.");
+  }
+}
+
+export class InvasionPhase extends Phase {
+  readonly name = "Setup";
+  readonly gameOngoing = true;
+  private attacker: Player;
+  private defender: Player;
+
+  constructor(attacker: Player, defender: Player) {
+    super();
+    this.attacker = attacker;
+    this.defender = defender;
+  }
+
+  getAttacker() {
+    return this.attacker;
+  }
+
+  getDefender() {
+    return this.defender;
+  }
+
+  enter() {
+    console.log("Invasion phase");
+  }
+
+  next(): Phase {
+    return new InitPhase(); 
+  }
+
 }
 

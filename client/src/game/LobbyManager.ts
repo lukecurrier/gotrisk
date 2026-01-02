@@ -7,8 +7,12 @@ import { BoardCreator, CharacterCardReader, MaesterCardReader, VictoryCardReader
 
 export class LobbyManager {
   private players: Player[] = [];
-  private settings: GameSettings;
+  private settings: GameSettings = DefaultSettings;
   private playerReady: Record<string, boolean> = {};
+
+  addSettings(settings: GameSettings) {
+    this.settings = settings;
+  }
 
   addPlayer(player: Player) {
     this.players.push(player);
@@ -37,7 +41,7 @@ export class LobbyManager {
       throw new Error("Not all players are ready");
     }
 
-    GameManager.create(this.settings, this.players, 0);
+    GameManager.create(this.settings, this.players, 0, this.settings.territoryDeck, this.settings.maesterDeck, this.settings.victoryDeck);
     return GameManager.instance;
   }
 }
@@ -54,7 +58,8 @@ export class GameSettings {
     constructor(charactersFilePath: string,
       mapFilePath: string,
       maestersFilePath: string,
-      victoryFilePath: string) {
+      victoryFilePath: string,
+      activePlayerIndex: number) {
 
       const mapInfo = new BoardCreator().createFrom(mapFilePath);
       this.map = mapInfo.board;
@@ -64,6 +69,9 @@ export class GameSettings {
       const victoryInfo = new VictoryCardReader().createVictoryCardDeckFrom(victoryFilePath);
       this.victoryDeck = victoryInfo.victoryCards;
       this.victoryTarget = victoryInfo.pointsToWin;
+      this.activePlayerIndex = activePlayerIndex;
     }
 
 }
+
+export const DefaultSettings = new GameSettings("", "", "", "", 0); // todo change constructor to not use files and instead use constants

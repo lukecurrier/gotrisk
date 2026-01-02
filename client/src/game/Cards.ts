@@ -1,4 +1,4 @@
-import { Token } from "../utils/Utils";
+import { GameTimeMarker, Token } from "../utils/Utils";
 import { Territory } from "./Board/Territory";
 import type { CardCheck } from "./CardCheck";
 import { CardEffect } from "./CardEffect";
@@ -12,10 +12,11 @@ export abstract class Card {
     protected type: CardType;
     protected owner?: Player;
 
-    constructor(id: number, name: string, checks: CardCheck[]) {
+    constructor(id: number, name: string, type: CardType, checks: CardCheck[]) {
         this.id = id;
         this.name = name;
         this.checks = checks;
+        this.type = type;
     }
 
     cardType(): CardType {
@@ -42,10 +43,9 @@ export class CharacterCard extends Card {
     readonly cardEffect: CardEffect;
 
     constructor(id: number, name: string, checks: CardCheck[], price: number, effect: CardEffect) {
-        super(id, name, checks);
+        super(id, name, CardType.Character, checks);
         this.price = price;
         this.cardEffect = effect;
-        this.type = CardType.Character;
     }
 
     override play(): void {
@@ -67,9 +67,8 @@ export class MaesterCard extends Card {
     readonly cardEffect: CardEffect;
 
     constructor(id: number, name: string, checks: CardCheck[], price: number, effect: CardEffect) {
-        super(id, name, checks);
+        super(id, name, CardType.Maester, checks);
         this.price = price;
-        this.type = CardType.Maester;
         this.cardEffect = effect;
     }
 
@@ -92,9 +91,8 @@ export class VictoryCard extends Card {
     readonly value: number
 
     constructor(id: number, name: string, checks: CardCheck[], value: number) {
-        super(id, name, checks);
+        super(id, name, CardType.Victory, checks);
         this.value = value;
-        this.type = CardType.Victory;
     }
 
     protected effect(): void {
@@ -107,10 +105,9 @@ export class TerritoryCard extends Card {
     readonly territory: Territory;
 
     constructor(id: number, name: string, checks: CardCheck[], token: Token, territory: Territory) {
-        super(id, name, checks);
+        super(id, name, CardType.Territory, checks);
         this.token = token;
         this.territory = territory;
-        this.type = CardType.Territory;
     }
 
     protected effect(): void {

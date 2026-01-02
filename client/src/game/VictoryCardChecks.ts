@@ -1,7 +1,7 @@
 import { CardCheck } from "./CardCheck";
 import { VictoryCard } from "./Cards";
 
-export const VictoryCardCheckMap = new Map<string, CardCheck[]>([ // TODO fill these out
+export const VictoryCardCheckMap = new Map<string, CardCheck[]>([ // TODO fill these out, victory time is added on creation
 
     ["CONTROL 4 CASTLES AND 2 PORTS", []],
     ["CONTROL 1 KNIGHT, SIEGE ENGINE, AND FORTIFICATION", []],

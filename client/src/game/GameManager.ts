@@ -6,11 +6,14 @@ import { Phase, PhaseManager } from "./GamePhase";
 import { GameSettings } from "./LobbyManager";
 import { Player } from "./Player";
 import { MaesterCard, VictoryCard, TerritoryCard } from "./Cards";
+import { Card } from "./Cards";
 
 export class GameManager {
     private static _instance: GameManager;
 
     private phaseManager: PhaseManager;
+
+    private effectStack: Card[];
 
     readonly players: Player[]
     readonly territories: Territory[];
@@ -24,7 +27,11 @@ export class GameManager {
 
     capitalTroops: number = 3;
 
-    private constructor(map: Board, players: Player[], activePlayerIndex: number) {
+    private constructor(map: Board, players: Player[], activePlayerIndex: number, 
+        territoryCardDeck: TerritoryCard[],
+        maesterCardDeck: MaesterCard[],
+        victoryCardDeck: VictoryCard[]
+    ) {
         this.phaseManager = new PhaseManager(players);
         this.map = map;
         this.continents = map.continents;
@@ -32,11 +39,20 @@ export class GameManager {
         this.territories = this.regions.flatMap(region => region.territories);
         this.players = players;
         this.activePlayerIndex = activePlayerIndex;
+        this.territoryCardDeck = territoryCardDeck;
+        this.maesterCardDeck = maesterCardDeck;
+        this.victoryCardDeck = victoryCardDeck;
         // TODO: initialize decks
     }
 
-    static create(settings: GameSettings, players: Player[], activePlayerIndex: number) {
-        GameManager._instance = new GameManager(settings.map, players, activePlayerIndex);
+    static create(settings: GameSettings, players: Player[], activePlayerIndex: number,
+        territoryCardDeck: TerritoryCard[],
+        maesterCardDeck: MaesterCard[],
+        victoryCardDeck: VictoryCard[]
+    ) {
+        GameManager._instance = new GameManager(settings.map, players, activePlayerIndex, territoryCardDeck,
+            maesterCardDeck, victoryCardDeck
+        );
         return GameManager._instance;
     }
 
@@ -52,8 +68,16 @@ export class GameManager {
         this.players.push(player);
     }
 
+    getPhaseManager() {
+        return this.phaseManager;
+    }
+
     isGameOngoing() {
         return this.phaseManager.currentPhase.gameOngoing;
+    }
+
+    getGameTimeMarker() {
+        return null; //todo return the right game time marker somehow, from phase or whatnot
     }
 
     // MARK: In-game methods

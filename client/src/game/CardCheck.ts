@@ -1,5 +1,6 @@
 import { Player } from "./Player";
 import { GameManager } from "./GameManager";
+import { GameTimeMarker } from "../utils/Utils";
 
 export type CardCheck = (player: Player) => boolean;
 
@@ -11,8 +12,17 @@ export const CardChecks = {
     isPlayerTurn: (): CardCheck =>
         (player) => GameManager.instance.getActivePlayer() === player,
 
+    not: (c: CardCheck): CardCheck => 
+        (player) => !c(player),
+
+    isAttackingPlayer: (): CardCheck => //todo find a way to check phase type and then attack / defend
+        (player) => GameManager.instance.getPhaseManager().getCurrentPhase().name == "Invasion", //or battle etc?
+        //then cast to invasion or batle phase and get the attacker and compare
+
     //isGamePhase: (phase: GamePhase): CardCheck => //This should just compare phase types right?
     //    (player) => gameManager.getPhaseManager().currentPhase === phase,
+    isRightGameTime: (timeMarker: GameTimeMarker): CardCheck =>
+        (player) => timeMarker == GameTimeMarker.AnyTime || GameManager.instance.getGameTimeMarker() == timeMarker,
 
     playerOwnsCastles: (count: number): CardCheck =>
         (player) => player.getCastleCount() >= count,

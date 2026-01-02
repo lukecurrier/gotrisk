@@ -4,42 +4,121 @@
     <title>Multiplayer Buttons</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-      body { font-family: sans-serif; padding: 20px; }
-      .player { margin: 5px 0; font-weight: bold; }
-      button { margin-right: 10px; padding: 10px 20px; }
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .player {
+        margin: 5px 0;
+        font-weight: bold;
+      }
+      button {
+        margin-right: 10px;
+        padding: 10px 20px;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     </style>
   </head>
+
   <body>
     <h1>Multiplayer Buttons</h1>
+
     <div id="players"></div>
-    <button id="btn1">+5 when everyone clicks</button>
-    <button id="btn2">+1 instantly</button>
+
+    <div style="margin-top: 20px;">
+      <button id="startEndBtn"></button>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button id="btn1">+5 when everyone clicks</button>
+      <button id="btn2">+1 instantly</button>
+    </div>
 
     <script>
       const socket = io();
-      const playersDiv = document.getElementById("players");
       const roomId = "default";
 
-      // Persist name in localStorage
-      name = prompt("Enter your name:") || "Anonymous";
+      const playersDiv = document.getElementById("players");
+      const btn1 = document.getElementById("btn1");
+      const btn2 = document.getElementById("btn2");
+      const startEndBtn = document.getElementById("startEndBtn");
+
+      let playerID = null;
+      let gameOngoing = false;
+      let activePlayers = [];
+
+      const name = prompt("Enter your name:") || "Anonymous";
       socket.emit("joinGame", { roomId, name });
 
-      document.getElementById("btn1").addEventListener("click", () => {
-        socket.emit("button1", { roomId });
+      /* -------------------- UI helpers -------------------- */
+
+      function updateGameplayButtons() {
+        const canPlay = gameOngoing && activePlayers.includes(playerID);
+        btn1.disabled = !canPlay;
+        btn2.disabled = !canPlay;
+      }
+
+      function updateStartEndButton(state) {
+        const {
+          gameOngoing,
+          startVotes,
+          endVotes,
+          totalPlayers
+        } = state;
+
+        if (!gameOngoing) {
+          startEndBtn.textContent = `Start Game? ${startVotes}/${totalPlayers}`;
+          startEndBtn.onclick = () =>
+            socket.emit("startGame", { roomId });
+        } else {
+          startEndBtn.textContent = `End Game? ${endVotes}/${activePlayers.length}`;
+          startEndBtn.onclick = () =>
+            socket.emit("endGame", { roomId });
+        }
+      }
+
+      /* -------------------- socket events -------------------- */
+
+      socket.on("joined", data => {
+        playerID = data.playerID;
+        gameOngoing = data.gameOngoing;
+        activePlayers = data.activePlayers || [];
+        updateGameplayButtons();
       });
 
-      document.getElementById("btn2").addEventListener("click", () => {
-        socket.emit("button2", { roomId });
-      });
-
-      socket.on("players", (players) => {
+      socket.on("players", players => {
         playersDiv.innerHTML = "";
+
         players.forEach(p => {
+          if (gameOngoing && !activePlayers.includes(p.id)) return;
+
           const div = document.createElement("div");
           div.className = "player";
           div.textContent = `${p.name}: ${p.score}`;
           playersDiv.appendChild(div);
         });
+      });
+
+
+      socket.on("roomState", state => {
+        gameOngoing = state.gameOngoing;
+        activePlayers = state.activePlayers || activePlayers;
+
+        updateStartEndButton(state);
+        updateGameplayButtons();
+      });
+
+      /* -------------------- gameplay -------------------- */
+
+      btn1.addEventListener("click", () => {
+        socket.emit("button1", { roomId });
+      });
+
+      btn2.addEventListener("click", () => {
+        socket.emit("button2", { roomId });
       });
     </script>
   </body>
