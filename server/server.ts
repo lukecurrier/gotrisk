@@ -1,7 +1,6 @@
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { MapCreator } from "../client/src/utils/Utils";
 
 const app = express();
 const httpServer = createServer(app);
