@@ -6,11 +6,14 @@ import { Phase, PhaseManager } from "./GamePhase";
 import { GameSettings } from "./LobbyManager";
 import { Player } from "./Player";
 import { MaesterCard, VictoryCard, TerritoryCard } from "./Cards";
+import { Card } from "./Cards";
 
 export class GameManager {
     private static _instance: GameManager;
 
     private phaseManager: PhaseManager;
+
+    private effectStack: Card[];
 
     readonly players: Player[]
     readonly territories: Territory[];

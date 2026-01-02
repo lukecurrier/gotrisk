@@ -9,15 +9,17 @@ export abstract class Phase {
   */
   abstract readonly name: string;
   abstract readonly gameOngoing: boolean;
+
+  protected players: Player[];
+
   protected permanentEffects: CardEffect[] | undefined;
   protected turnCycleEffects: CardEffect[] | undefined;
   protected endOfTurnEffects: CardEffect[] | undefined;
+  protected combatEffects: CardEffect[] | undefined;
   protected invasionEffects: CardEffect[] | undefined;
   protected battleEffects: CardEffect[] | undefined;
 
-
   enter?(): void;
-  exit?(): void;
 
   abstract next(): Phase;
 
@@ -55,65 +57,62 @@ export abstract class Phase {
     }
     this.battleEffects.push(e);
   }
+
+  addPlayer(p: Player) {
+    this.players.push(p);
+  }
+
+  getPlayers() {
+    return this.players;
+  }
 }
 
 export class PhaseManager {
-  playerAcks: Record<string, boolean>;
   currentPhase: Phase;
 
   constructor(players: Player[]) {
-    this.currentPhase = new InitPhase("Init", true);
-    this.playerAcks = Object.fromEntries(players.map(p => [p.id, false]));
+    this.currentPhase = new InitPhase();
   }
 
   getCurrentPhase() {
     return this.currentPhase;
   }
 
-  acknowledge(player: Player) {
-    this.playerAcks[player.id] = true;
-
-    if (Object.values(this.playerAcks).every(v => v)) {
-      this.transitionPhases();
-    }
-  }
-
-  needsAction(player:Player) {
-    this.playerAcks[player.id] = false;
-  }
-
   transitionPhases() {
+    // prompt player responses
     this.currentPhase = this.currentPhase.next();
-
-    for (const id in this.playerAcks) {
-      this.playerAcks[id] = false;
-    }
+    // now that we're in a new phase, prompt again
   }
 }
 
-
+// This phase comprises the setup - players getting into the lobby, etc. 
+// Once all players have been added and the Start Game button is pressed with everyone readied up, the game starts
 export class InitPhase extends Phase {
-  name: string;
-  gameOngoing: boolean;
-
-  constructor(name: string, gameOngoing: boolean) {
-    super();
-    this.name = name;
-    this.gameOngoing = gameOngoing;
-  }
+  readonly name = "Init"
+  readonly gameOngoing = false;
 
   next(): Phase {
-    throw new Error("Method not implemented.");
+    return new SetupPhase(this.getPlayers()); 
   }
-  
 }
 
+/* This phase is for players to: 
+  - Pick player order
+  - Assign/draft house or characters
+  - Assign/draft territories
+  - Place capitols
+  - Place troops
+  - Give turn order handicaps
+*/
 export class SetupPhase extends Phase {
   readonly name = "Setup";
   readonly gameOngoing = true;
 
-  constructor(private players: Player[]) {
+  constructor(players: Player[]) {
     super();
+    for (const player of players) {
+      this.addPlayer(player);
+    }
   }
 
   enter() {
@@ -121,7 +120,15 @@ export class SetupPhase extends Phase {
   }
 
   next(): Phase {
-    return new SetupPhase(this.players); // TODO: This is self referential lol add the rest of em
+    return new TurnPhase();
+  }
+}
+
+export class TurnPhase extends Phase {
+  name: string;
+  gameOngoing: boolean;
+  next(): Phase {
+    throw new Error("Method not implemented.");
   }
 }
 
@@ -150,7 +157,7 @@ export class InvasionPhase extends Phase {
   }
 
   next(): Phase {
-    return new InitPhase("aaa", false); // TODO: fixnthis placeholder
+    return new InitPhase(); 
   }
 
 }
