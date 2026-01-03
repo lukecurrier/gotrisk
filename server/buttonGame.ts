@@ -131,6 +131,7 @@ io.on("connection", (socket) => {
       totalPlayers: Object.keys(room.players).length,
       activePlayers: Array.from(room.activePlayerIDs),
     });
+    socket.emit('youAre', playerID);
   });
 
   socket.on("endGame", ({ roomId }) => {

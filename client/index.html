@@ -37,6 +37,10 @@
       <button id="btn2">+1 instantly</button>
     </div>
 
+    <div id="youAre", style="margin-top: 20px;">
+      
+    </div>
+
     <script>
       const socket = io();
       const roomId = "default";
@@ -45,6 +49,7 @@
       const btn1 = document.getElementById("btn1");
       const btn2 = document.getElementById("btn2");
       const startEndBtn = document.getElementById("startEndBtn");
+      const youAre = document.getElementById("youAre");
 
       let playerID = null;
       let gameOngoing = false;
@@ -87,6 +92,10 @@
         gameOngoing = data.gameOngoing;
         activePlayers = data.activePlayers || [];
         updateGameplayButtons();
+      });
+
+      socket.on('youAre', playerID => {
+        youAre.innerHTML = playerID;
       });
 
       socket.on("players", players => {
