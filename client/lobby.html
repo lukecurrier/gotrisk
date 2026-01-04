@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GOT Risk Lobby</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .player {
+        margin: 5px 0;
+        font-weight: bold;
+      }
+      button {
+        margin-right: 10px;
+        padding: 10px 20px;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Lobby</h1>
+
+    <div id="Players List"></div>
+
+    <div style="margin-top: 20px;">
+      <button id="Ready Button"></button>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button id="startBtn"></button>
+    </div>
+
+    <div style="margin-top: 20px;">
+
+        <label for = "Settings">Settings</label>
+        <table>
+        <tr>
+        <td>
+            <label for = "Map">Map</label>
+            <select name="Main Menu Map Select" id="Main Menu Map Select">
+            <option value="Westeros">Westeros</option>
+            <option value="Essos">Essos</option>
+            <option value="World">World</option>
+            </select>
+        </td>
+        </tr>
+
+        <tr>
+        <td>
+            <label for = "Character Cards">Character Cards</label>
+            <select name="Main Menu Character Cards Select" id="Main Menu Character Cards Select">
+            <option value="Standard">Standard</option>
+            </select>
+        </td>
+        </tr>
+
+        <tr>
+        <td>
+            <label for = "Maester Cards">Maester Cards</label>
+            <select name="Main Menu Maester Cards Select" id="Main Menu Maester Cards Select">
+            <option value="Standard">Standard</option>
+            </select>
+        </td>
+        </tr>
+
+        <tr>
+        <td>
+            <label for = "Victory Cards">Character Cards</label>
+            <select name="Main Menu Victory Cards Select" id="Main Menu Victory Cards Select">
+            <option value="Standard">Standard</option>
+            </select>
+        </td>
+        </tr>
+        </table>
+    </div>
+
+    <script>
+      const socket = io();
+      const roomId = "default";
+
+      const playersDiv = document.getElementById("Players List");
+      const startBtn = document.getElementById("startBtn");
+      const readyBtn = document.getElementById("Ready Button");
+
+      let playerID = null;
+      let gameOngoing = false;
+      let activePlayers = [];
+
+      const name = prompt("Enter your name:") || "Anonymous";
+      socket.emit("joinGame", { roomId, name });
+
+      /* -------------------- UI helpers -------------------- */
+
+      function updateGameplayButtons() {
+        const canPlay = gameOngoing && activePlayers.includes(playerID);
+      }
+
+      function updateStartButton(readyCount) {
+
+        startBtn.textContent = `Start Game? ${readyCount}/${activePlayers.length}`;
+        startBtn.onclick = () =>
+        socket.emit("startGame", { roomId });
+        
+      }
+
+      /* -------------------- socket events -------------------- */
+
+      socket.on("joined", playerID => {
+        playerID = data.playerID;
+        gameOngoing = data.gameOngoing;
+        activePlayers = data.activePlayers || [];
+        updateGameplayButtons();
+      });
+
+
+      socket.on("players", players => {
+        playersDiv.innerHTML = "";
+
+        for (const [id, ready] of Object.entries(players)) {
+          const div = document.createElement("div");
+          div.className = "player";
+          div.textContent = `${p.name}: ${p.score}`;
+          playersDiv.appendChild(div);
+        }
+      });
+
+
+      socket.on("roomState", state => {
+        gameOngoing = state.gameOngoing;
+        activePlayers = state.activePlayers || activePlayers;
+
+        updateStartButton(state);
+        updateGameplayButtons();
+      });
+
+      /* -------------------- gameplay -------------------- */
+
+      readyBtn.addEventListener("click", () => {
+        socket.emit("Ready Button", { roomId });
+      });
+
+      
+    </script>
+  </body>
+</html>

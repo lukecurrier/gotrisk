@@ -3,16 +3,16 @@ import { Card, MaesterCard, TerritoryCard, CharacterCard, VictoryCard, CardType 
 import { GameManager } from "./GameManager";
 
 export class Player {
-    readonly id: number;
+    readonly id: string; //filled with socket id from frontend
     readonly name: string;
-    readonly color: string;
+    private color: string;
     private capital?: Territory;
     private gold: number;
     private victoryPoints: number;
     private territories: Territory[];
     private cards: Map<CardType, Card[]>;
 
-    constructor(id: number, name: string, color: string) {
+    constructor(id: string, name: string, color: string) {
         this.id = id;
         this.name = name;
         this.color = color;
@@ -26,6 +26,10 @@ export class Player {
             [CardType.Victory, []],
             [CardType.Territory, []]
         ]);
+    }
+
+    setColor(color: string) {
+        this.color = color;
     }
 
     // MARK: Checks

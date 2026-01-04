@@ -8,7 +8,7 @@ import { Continent } from "../game/Board/Continent";
 import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import { Card, CharacterCard, MaesterCard, TerritoryCard, VictoryCard } from "../game/Cards";
+import { Card, CharacterCard, GameTimeMarker, MaesterCard, TerritoryCard, VictoryCard } from "../game/Cards";
 import { Player } from '../game/Player';
 //import { Map as HashMap } from 'immutable';
 import { CardEffect } from '../game/CardEffect';
@@ -27,25 +27,6 @@ export enum Token {
     Fortification,
     Knight,
     SiegeEngine,
-}
-
-export enum GameTimeMarker {
-    AnyTime,
-    OpponentPlaysAMaesterCard,
-    StartOfTurn,
-    TurnInTerritoryCards,
-    Reinforcements,
-    BeforeBuyingCards,
-    GetTerritoryCards,
-    BuyMaesterCards,
-    BeforeDeclaringInvasions,
-    BeforeAnInvasion,
-    BeforeABattle,
-    AfterRollingDiceForAnyReason,
-    AfterRollingDiceForABattle,
-    Maneuver,
-    TurnInVictoryCards,
-    EndOfTurn
 }
 
 export function randInt(low: number, high: number): number {

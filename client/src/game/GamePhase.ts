@@ -1,4 +1,5 @@
 import { CardEffect, CardEffects } from "./CardEffect";
+import { GameManager } from "./GameManager";
 import { Player } from "./Player";
 
 export abstract class Phase {
@@ -10,7 +11,7 @@ export abstract class Phase {
   abstract readonly name: string;
   abstract readonly gameOngoing: boolean;
 
-  protected players: Player[];
+  //protected players: Player[];
 
   protected permanentEffects: CardEffect[] | undefined;
   protected turnCycleEffects: CardEffect[] | undefined;
@@ -58,13 +59,16 @@ export abstract class Phase {
     this.battleEffects.push(e);
   }
 
-  addPlayer(p: Player) {
+  //not sure if players are stored in phase... should be in game manager
+  // we add players in lobby and add them to game manager from there
+  // Phases start once lobby is assembled and game settings (map etc) chosen?
+  /*addPlayer(p: Player) {
     this.players.push(p);
   }
 
   getPlayers() {
     return this.players;
-  }
+  }*/
 }
 
 export class PhaseManager {
@@ -92,12 +96,13 @@ export class InitPhase extends Phase {
   readonly gameOngoing = false;
 
   next(): Phase {
-    return new SetupPhase(this.getPlayers()); 
+    //return new SetupPhase(this.getPlayers()); 
+    return new SetupPhase(); 
   }
 }
 
 /* This phase is for players to: 
-  - Pick player order
+  - Pick player order (should this be lobby?)
   - Assign/draft house or characters
   - Assign/draft territories
   - Place capitols
@@ -108,25 +113,38 @@ export class SetupPhase extends Phase {
   readonly name = "Setup";
   readonly gameOngoing = true;
 
-  constructor(players: Player[]) {
+  /*constructor(players: Player[]) {
     super();
     for (const player of players) {
       this.addPlayer(player);
     }
+  }*/
+
+  constructor() {
+    super();
   }
 
   enter() {
-    console.log("Setting up the game with players:", this.players.map(p => p.name));
+    
+    console.log("Setting up the game with players:", GameManager.instance.players.map(p=> p.name));
+    //console.log("Setting up the game with players:", this.players.map(p => p.name));
   }
 
   next(): Phase {
-    return new TurnPhase();
+    return new TurnPhase("aaa", false);//todo fix
   }
 }
 
-export class TurnPhase extends Phase {
+export class TurnPhase extends Phase { //todo need to know whose turn it is in the phase, player object?
   name: string;
   gameOngoing: boolean;
+
+  constructor(name: string, gameOngoing: boolean) {
+    super();
+    this.name = name;
+    this.gameOngoing = gameOngoing;
+  }
+
   next(): Phase {
     throw new Error("Method not implemented.");
   }
@@ -138,7 +156,7 @@ export class InvasionPhase extends Phase {
   private attacker: Player;
   private defender: Player;
 
-  constructor(attacker: Player, defender: Player) {
+  constructor(attacker: Player, defender: Player) { //todo this should probably be attacking to defending territory...
     super();
     this.attacker = attacker;
     this.defender = defender;

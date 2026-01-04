@@ -1,9 +1,29 @@
-import { GameTimeMarker, Token } from "../utils/Utils";
+import { Token } from "../utils/Utils";
 import { Territory } from "./Board/Territory";
 import type { CardCheck } from "./CardCheck";
 import { CardEffect } from "./CardEffect";
 import { GameManager } from "./GameManager";
 import type { Player } from "./Player";
+
+
+export enum GameTimeMarker {
+    AnyTime,
+    OpponentPlaysAMaesterCard,
+    StartOfTurn,
+    TurnInTerritoryCards,
+    Reinforcements,
+    BeforeBuyingCards,
+    GetTerritoryCards,
+    BuyMaesterCards,
+    BeforeDeclaringInvasions,
+    BeforeAnInvasion,
+    BeforeABattle,
+    AfterRollingDiceForAnyReason,
+    AfterRollingDiceForABattle,
+    Maneuver,
+    TurnInVictoryCards,
+    EndOfTurn
+}
 
 export abstract class Card {
     readonly id: number;

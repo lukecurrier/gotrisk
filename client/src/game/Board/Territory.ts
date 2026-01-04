@@ -90,8 +90,8 @@ export class Territory {
 
     // MARK: Setters
     addNeighbor(that: Territory) {
-        const gm = GameManager.instance;
-        if (gm.isGameOngoing()) throw new Error("Game is ongoing!")
+        //const gm = GameManager.instance; //can't be checking gm here...
+        //if (gm.isGameOngoing()) throw new Error("Game is ongoing!")
 
         if (!this.isNeighboring(that)) { 
             this.neighbors.push(that) 

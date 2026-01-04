@@ -7,13 +7,14 @@ import { GameSettings } from "./LobbyManager";
 import { Player } from "./Player";
 import { MaesterCard, VictoryCard, TerritoryCard } from "./Cards";
 import { Card } from "./Cards";
+import { BoardCreator, MaesterCardReader, VictoryCardReader } from "../utils/Utils";
 
 export class GameManager {
     private static _instance: GameManager;
 
     private phaseManager: PhaseManager;
 
-    private effectStack: Card[];
+    //private effectStack: Card[];
 
     readonly players: Player[]
     readonly territories: Territory[];
@@ -21,6 +22,7 @@ export class GameManager {
     readonly continents: Continent[];
     readonly map: Board;
     activePlayerIndex: number;
+    readonly pointsToWin: number;
     readonly territoryCardDeck: TerritoryCard[];
     readonly maesterCardDeck: MaesterCard[];
     readonly victoryCardDeck: VictoryCard[];
@@ -30,8 +32,8 @@ export class GameManager {
     private constructor(map: Board, players: Player[], activePlayerIndex: number, 
         territoryCardDeck: TerritoryCard[],
         maesterCardDeck: MaesterCard[],
-        victoryCardDeck: VictoryCard[]
-    ) {
+        victoryCardDeck: VictoryCard[],
+        pointsToWin: number) {
         this.phaseManager = new PhaseManager(players);
         this.map = map;
         this.continents = map.continents;
@@ -42,18 +44,18 @@ export class GameManager {
         this.territoryCardDeck = territoryCardDeck;
         this.maesterCardDeck = maesterCardDeck;
         this.victoryCardDeck = victoryCardDeck;
+        this.pointsToWin = pointsToWin;
         // TODO: initialize decks
     }
 
-    static create(settings: GameSettings, players: Player[], activePlayerIndex: number,
-        territoryCardDeck: TerritoryCard[],
-        maesterCardDeck: MaesterCard[],
-        victoryCardDeck: VictoryCard[]
-    ) {
-        GameManager._instance = new GameManager(settings.map, players, activePlayerIndex, territoryCardDeck,
-            maesterCardDeck, victoryCardDeck
-        );
-        return GameManager._instance;
+    static create(settings: GameSettings, players: Player[], activePlayerIndex: number) {
+      const mapInfo = new BoardCreator().createFrom(settings.mapFilePath);
+      const victoryInfo = new VictoryCardReader().createVictoryCardDeckFrom(settings.victoryFilePath);
+
+      GameManager._instance = new GameManager(mapInfo.board, players, activePlayerIndex, mapInfo.territoryCards,
+        new MaesterCardReader().createMaesterCardDeckFrom(settings.maestersFilePath),
+        victoryInfo.victoryCards, victoryInfo.pointsToWin);
+      return GameManager._instance;
     }
 
     static get instance() {
@@ -62,7 +64,7 @@ export class GameManager {
     }
 
     // MARK: Pre-game methods
-    addPlayer(id: number, name: string, color: string) {
+    addPlayer(id: string, name: string, color: string) {
         this.guardPreGameOnly()
         let player = new Player(id, name, color);
         this.players.push(player);

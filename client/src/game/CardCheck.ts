@@ -1,6 +1,6 @@
 import { Player } from "./Player";
 import { GameManager } from "./GameManager";
-import { GameTimeMarker } from "../utils/Utils";
+import { GameTimeMarker } from "./Cards";
 
 export type CardCheck = (player: Player) => boolean;
 

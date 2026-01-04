@@ -1,6 +1,5 @@
-import { GameTimeMarker } from "../utils/Utils";
 import { CardChecks } from "./CardCheck";
-import { MaesterCard } from "./Cards";
+import { MaesterCard, GameTimeMarker } from "./Cards";
 
 export const MaesterCards: MaesterCard [] = [
     // Play before you declare invasions for a turn

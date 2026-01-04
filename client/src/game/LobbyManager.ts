@@ -7,8 +7,24 @@ import { BoardCreator, CharacterCardReader, MaesterCardReader, VictoryCardReader
 
 export class LobbyManager {
   private players: Player[] = [];
-  private settings: GameSettings = DefaultSettings;
+  private settings: GameSettings;
   private playerReady: Record<string, boolean> = {};
+
+  private static _instance: LobbyManager;
+
+  // to get settings ignored by not set errors
+  private constructor() {
+    this.settings = new GameSettings();
+  }
+
+  static get instance() {
+    if (!LobbyManager._instance) {
+      this._instance = new LobbyManager();
+      this._instance.addSettings(new GameSettings());
+    }
+    return LobbyManager._instance;
+  }
+
 
   addSettings(settings: GameSettings) {
     this.settings = settings;
@@ -19,21 +35,38 @@ export class LobbyManager {
     this.playerReady[player.id] = false;
   }
 
+  getPlayers() {
+    return this.players;
+  }
+
+  getPlayerReadyStatuses() {
+    return this.playerReady;
+  }
+
   removePlayer(player: Player) {
     this.players = this.players.filter(p => p.id !== player.id);
     delete this.playerReady[player.id];
   }
 
-  updateSettings(newSettings: Partial<GameSettings>) {
+  /*updateSettings(newSettings: Partial<GameSettings>) {
     this.settings = { ...this.settings, ...newSettings };
-  }
+  }*/
 
-  markReady(player: Player) {
-    this.playerReady[player.id] = true;
+  markReady(playerId: string) {
+    this.playerReady[playerId] = true;
   }
 
   allReady(): boolean {
     return Object.values(this.playerReady).every(v => v);
+  }
+
+  nameTaken(name: string): boolean {
+    for (const p of this.players) {
+      if (p.name === name) {
+        return true;
+      }
+    }
+    return false;
   }
 
   startGame(): GameManager {
@@ -41,11 +74,42 @@ export class LobbyManager {
       throw new Error("Not all players are ready");
     }
 
-    GameManager.create(this.settings, this.players, 0, this.settings.territoryDeck, this.settings.maesterDeck, this.settings.victoryDeck);
+    GameManager.create(this.settings, this.players, 0);
     return GameManager.instance;
   }
 }
 
+export class GameSettings {
+  mapFilePath: string;
+  charactersFilePath: string;
+  maestersFilePath: string;
+  victoryFilePath: string;
+
+  constructor() {
+    this.mapFilePath = "";
+    this.charactersFilePath = "";
+    this.maestersFilePath = "";
+    this.victoryFilePath = "";
+  }
+
+  updateMapPath(path: string) {
+    this.mapFilePath = path;
+  }
+
+  updateCharactersPath(path: string) {
+    this.mapFilePath = path;
+  }
+
+  updateMaestersPath(path: string) {
+    this.mapFilePath = path;
+  }
+
+  updateVicotoryPath(path: string) {
+    this.mapFilePath = path;
+  }
+}
+
+/*
 export class GameSettings {
     map: Board;
     activePlayerIndex: number;
@@ -72,6 +136,6 @@ export class GameSettings {
       this.activePlayerIndex = activePlayerIndex;
     }
 
-}
+}*/
 
-export const DefaultSettings = new GameSettings("", "", "", "", 0); // todo change constructor to not use files and instead use constants
+//export const DefaultSettings = new GameSettings("", "", "", "", 0); // todo change constructor to not use files and instead use constants

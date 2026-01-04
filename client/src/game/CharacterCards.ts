@@ -1,6 +1,5 @@
-import { GameTimeMarker } from "../utils/Utils";
 import { CardChecks } from "./CardCheck";
-import { CharacterCard } from "./Cards";
+import { CharacterCard, GameTimeMarker } from "./Cards";
 
 export const CharacterCards: CharacterCard [] = [ //todo game time markers... see way below at last error
     // Play before you declare any invasions
