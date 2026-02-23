@@ -52,8 +52,12 @@ export class LobbyManager {
     this.settings = { ...this.settings, ...newSettings };
   }*/
 
-  markReady(playerId: string) {
-    this.playerReady[playerId] = true;
+  toggleReady(playerId: string) {
+    if (playerId in this.playerReady) {
+      this.playerReady[playerId] = !this.playerReady[playerId];
+    } else {
+      this.playerReady[playerId] = true;
+    }
   }
 
   allReady(): boolean {

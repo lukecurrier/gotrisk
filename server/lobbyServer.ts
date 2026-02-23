@@ -57,11 +57,12 @@ io.on("connection", (socket) => {
     });
 
     io.to(roomId).emit("roomState", { //todo gotta give it whatever it needs
-      /*players: Object.values(room.players),
-      totalPlayers: Object.keys(room.players).length,
-      activePlayers: Array.from(room.activePlayerIDs),*/
+      //gameOngoing: false,
+      //players: Object.values(room.lobbyManager.getPlayers()),
+      //totalPlayers: Object.keys(room.lobbyManager.getPlayers()).length,
+      //activePlayers: Array.from(room.lobbyManager.getPlayerReadyStatuses())
     });
-    //io.to(roomId).emit("players", Object.values(room.players));
+    io.to(roomId).emit("players", rooms[roomId].lobbyManager.getPlayerReadyStatuses());
   });
 
   socket.on("startGame", ({ roomId }) => {
@@ -84,8 +85,14 @@ io.on("connection", (socket) => {
 
     const playerID = socket.data.playerID || socket.id;
     let lobbyManager = rooms[roomId].lobbyManager;
-    lobbyManager.markReady(playerID);
+    lobbyManager.toggleReady(playerID);
 
+    io.to(roomId).emit("players", rooms[roomId].lobbyManager.getPlayerReadyStatuses());
+  });
+
+  socket.on("player status", (data: {roomId: string}) => { //todo duplicated code with ready button
+    const roomId = data?.roomId;
+    if (!roomId) return;
     io.to(roomId).emit("players", rooms[roomId].lobbyManager.getPlayerReadyStatuses());
   });
 

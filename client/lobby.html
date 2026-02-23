@@ -26,10 +26,13 @@
   <body>
     <h1>Lobby</h1>
 
+    <div id="Players">
+        Players
     <div id="Players List"></div>
+    </div>
 
     <div style="margin-top: 20px;">
-      <button id="Ready Button"></button>
+      <button id="Ready Button">Ready</button>
     </div>
 
     <div style="margin-top: 20px;">
@@ -101,12 +104,22 @@
         const canPlay = gameOngoing && activePlayers.includes(playerID);
       }
 
-      function updateStartButton(readyCount) {
+      function updatePlayerStatuses() {
+        socket.emit("player status");
+      }
 
-        startBtn.textContent = `Start Game? ${readyCount}/${activePlayers.length}`;
+      function updateStartButton(players) {
+
+        let readyCount = 0;
+        for (const [id, ready] of Object.entries(players)) {
+          if (ready) {
+            readyCount = readyCount + 1;
+          }
+        }
+
+        startBtn.textContent = `Start Game? ${readyCount}/${Object.keys(players).length}`;
         startBtn.onclick = () =>
         socket.emit("startGame", { roomId });
-        
       }
 
       /* -------------------- socket events -------------------- */
@@ -114,8 +127,8 @@
       socket.on("joined", playerID => {
         playerID = data.playerID;
         gameOngoing = data.gameOngoing;
-        activePlayers = data.activePlayers || [];
-        updateGameplayButtons();
+        //activePlayers = data.activePlayers || [];
+        updatePlayerStatuses();
       });
 
 
@@ -125,9 +138,11 @@
         for (const [id, ready] of Object.entries(players)) {
           const div = document.createElement("div");
           div.className = "player";
-          div.textContent = `${p.name}: ${p.score}`;
+          div.textContent = `${id}: ${ready}`;
           playersDiv.appendChild(div);
         }
+
+        updateStartButton(players);
       });
 
 
@@ -135,7 +150,7 @@
         gameOngoing = state.gameOngoing;
         activePlayers = state.activePlayers || activePlayers;
 
-        updateStartButton(state);
+        updateStartButton(activePlayers);
         updateGameplayButtons();
       });
 
