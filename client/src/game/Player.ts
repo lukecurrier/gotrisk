@@ -1,5 +1,5 @@
 import type { Territory } from "./Board/Territory";
-import { Card, MaesterCard, TerritoryCard, CharacterCard, VictoryCard, CardType } from "./Cards";
+import { Card, CardType } from "./Cards";
 import { GameManager } from "./GameManager";
 
 export class Player {
@@ -29,50 +29,36 @@ export class Player {
     }
 
     // MARK: Checks
-    startOfTurnCount(): { gold: number; troops: number; } {
+    startOfTurnCount(): { gold: number; troops: number } {
         const gm = GameManager.instance;
 
-        let castlesOwned = 0;   
-        let portsOwned = 0;     
-        let ownedTerritories = this.territories;
-        for (const region of ownedTerritories) {
-            if (region.port) portsOwned += 1;
-            if (region.castle) castlesOwned += 1;
+        let castlesOwned = 0;
+        let portsOwned = 0;
+        for (const t of this.territories) {
+            if (t.port) portsOwned++;
+            if (t.castle) castlesOwned++;
         }
 
         let regionBonuses = 0;
-        let allRegions = gm.regions;
-        for (const region of allRegions) {
-            if (region.owned(this)) {
-                regionBonuses += region.regionBonus;
-            }
+        for (const region of gm.regions) {
+            if (region.owned(this)) regionBonuses += region.regionBonus;
         }
 
-        let troops =  Math.floor((ownedTerritories.length + castlesOwned) / 3) + regionBonuses;
-        let gold = (troops + portsOwned) * 100;
+        const troops = Math.floor((this.territories.length + castlesOwned) / 3) + regionBonuses;
+        const gold = (troops + portsOwned) * 100;
 
-        return {troops, gold}
+        return { troops, gold };
     }
 
     // MARK: Getters
-    getCapital(): Territory { 
-        if(!this.capital) {
-            throw new Error ("Player has no capital!") 
-        }
+    getCapital(): Territory {
+        if (!this.capital) throw new Error("Player has no capital!");
         return this.capital;
     }
 
-    getColor(): string {
-        return this.color;
-    }
-    
     canSpend(gold: number): boolean { return this.gold >= gold; }
-
     getGold(): number { return this.gold; }
-    
-    getVictoryPoints(): number {
-        return this.victoryPoints;
-    }
+    getVictoryPoints(): number { return this.victoryPoints; }
 
     getCards(type: CardType): Card[] {
         return this.cards.get(type) || [];
@@ -91,51 +77,56 @@ export class Player {
     }
 
     hasCard(card: Card): boolean {
-        const cardsOfType = this.getCards(card.cardType());
-        return cardsOfType.includes(card);
+        return this.getCards(card.cardType()).includes(card);
+    }
+
+    getTerritoryCount(): number { return this.territories.length; }
+    getCastleCount(): number { return this.territories.filter(t => t.castle).length; }
+    getPortCount(): number { return this.territories.filter(t => t.port).length; }
+
+    hasAllTokens(): boolean {
+        let hasFort = false, hasKnight = false, hasSiege = false;
+        for (const t of this.territories) {
+            if (t.getFortifications() > 0) hasFort = true;
+            if (t.getKnights() > 0) hasKnight = true;
+            if (t.getSiegeEngines() > 0) hasSiege = true;
+        }
+        return hasFort && hasKnight && hasSiege;
     }
 
     // MARK: Setters
-    awardVictoryPoints(points: number) {
-        this.victoryPoints += points;
-    }
-
-    loseVictoryPoints(points: number) {
-        this.victoryPoints -= points;
-    }
+    awardVictoryPoints(points: number) { this.victoryPoints += points; }
+    loseVictoryPoints(points: number) { this.victoryPoints -= points; }
 
     setCapital(territory: Territory) {
-        if (this.capital) throw new Error(`${name} already has a capital!`)
-        if (!this.territories.includes(territory)) throw new Error(`${name} does not own this territory!`)
+        if (this.capital) throw new Error(`${this.name} already has a capital!`);
+        if (!this.territories.includes(territory)) throw new Error(`${this.name} does not own this territory!`);
         this.capital = territory;
     }
 
-    spend(gold: number) {
-        this.gold -= gold;
-    }
-
-    earn(gold: number) { 
-        this.gold += gold;
-    }
+    spend(gold: number) { this.gold -= gold; }
+    earn(gold: number) { this.gold += gold; }
+    setGold(g: number) { this.gold = g; }
+    setVictoryPoints(vp: number) { this.victoryPoints = vp; }
 
     addTerritory(territory: Territory) {
-        if (territory.getOwner() != this) {
-            throw new Error("Territory and Player disagree on owner!")
+        if (territory.getOwner() !== this) {
+            throw new Error("Territory and Player disagree on owner!");
         }
         this.territories.push(territory);
     }
 
-    removeTerritory(territory: Territory) { //Should only be called BEFORE giving territory to new owner
-        if (territory.getOwner() != this) {
-            throw new Error("Territory and Player disagree on owner!")
+    removeTerritory(territory: Territory) {
+        if (territory.getOwner() !== this) {
+            throw new Error("Territory and Player disagree on owner!");
         }
-        const territoryFilter = (t: Territory, i: number, tList: Territory []) => !(t === territory);
-        this.territories = this.territories.filter(territoryFilter);
+        this.territories = this.territories.filter(t => t !== territory);
     }
 
     addCard(card: Card): void {
         const cardsOfType = this.cards.get(card.cardType());
         if (cardsOfType && !cardsOfType.includes(card)) {
+            card.setOwner(this);
             cardsOfType.push(card);
         }
     }
@@ -143,45 +134,34 @@ export class Player {
     removeCard(card: Card): boolean {
         const cardsOfType = this.cards.get(card.cardType());
         if (!cardsOfType) return false;
-        
+
         const index = cardsOfType.indexOf(card);
         if (index !== -1) {
             cardsOfType.splice(index, 1);
+            card.clearOwner();
             return true;
         }
         return false;
     }
 
-    getTerritoryCount(): number {
-        return this.territories.length;
+    // ── Snapshot support ──────────────────────────────────────────────
+    getCardIds(): number[] {
+        return this.getAllCards().map(c => c.id);
     }
 
-    getCastleCount(): number {
-        const territoryCastleFilter = (t: Territory, i: number, tList: Territory []) => (t.castle);
-        return this.territories.filter(territoryCastleFilter).length;
-    }
-
-    getPortCount(): number {
-        const territoryPortFilter = (t: Territory, i: number, tList: Territory []) => (t.port);
-        return this.territories.filter(territoryPortFilter).length;
-    }
-
-    hasAllTokens(): boolean {
-        let hasTokens: number[] = [0,0,0]; // Fortification, Knight, Siege Engine in that order
-        
-        for(let t of this.territories) {
-            if(t.getFortifications() > 0) {
-                hasTokens[0] = 1;
-            }
-            if(t.getKnights() > 0) {
-                hasTokens[1] = 1;
-            }
-            if(t.getSiegeEngines() > 0) {
-                hasTokens[2] = 1;
-            }
+    clearCards() {
+        for (const [, cards] of this.cards) {
+            for (const card of cards) card.clearOwner();
         }
+        this.cards = new Map([
+            [CardType.Character, []],
+            [CardType.Maester, []],
+            [CardType.Victory, []],
+            [CardType.Territory, []]
+        ]);
+    }
 
-        return hasTokens[0] + hasTokens[1] + hasTokens[2] == 3;
-    
+    setTerritoriesDirect(territories: Territory[]) {
+        this.territories = territories;
     }
 }

@@ -1,6 +1,7 @@
 import { Player } from "../Player";
 import { Region } from "./Region";
-import { Token, BattleResult } from "../../utils/Utils";
+import { Token } from "../../utils/types";
+import { BattleResult } from "../../utils/Utils";
 import { GameManager } from "../GameManager";
 
 export class Territory {
@@ -73,7 +74,11 @@ export class Territory {
     }
 
     // MARK: Getters
-    getOwner(): Player { 
+    getRegion(): Region { return this.region; }
+
+    hasOwner(): boolean { return this.owner !== undefined; }
+
+    getOwner(): Player {
         if (!this.owner) throw new Error("No owner!");
         return this.owner; 
     }
@@ -90,11 +95,8 @@ export class Territory {
 
     // MARK: Setters
     addNeighbor(that: Territory) {
-        const gm = GameManager.instance;
-        if (gm.isGameOngoing()) throw new Error("Game is ongoing!")
-
-        if (!this.isNeighboring(that)) { 
-            this.neighbors.push(that) 
+        if (!this.isNeighboring(that)) {
+            this.neighbors.push(that)
             that.addNeighbor(this)
         }
     }
@@ -159,6 +161,13 @@ export class Territory {
         newOwner.addTerritory(this);
     }
 
+    // MARK: Snapshot support
+    setTroopsDirect(n: number) { this.troops = n; }
+    setKnights(n: number) { this.knights = n; }
+    setFortifications(n: number) { this.fortifications = n; }
+    setSiegeEngines(n: number) { this.siegeEngines = n; }
+    setOwnerDirect(p: Player | undefined) { this.owner = p; }
+
     // MARK: Private helpers
     private canManeuver(to: Territory, numberOfTroops: number): boolean {
         return this.isConnected(to) && numberOfTroops < this.troops;
@@ -191,7 +200,7 @@ export class Territory {
         this.troops = to;
     }
 
-    toString() {
-        console.log("TERRITORY: " + this.name + "\n");
+    toString(): string {
+        return this.name;
     }
 }

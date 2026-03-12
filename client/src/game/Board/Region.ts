@@ -15,20 +15,10 @@ export class Region {
     }
 
     owned(player: Player): boolean {
-        for(let i=0; i++; i<=this.territories.length) {
-            if(this.territories[i]?.getOwner() !== player) {
-                return false
-            }
-        }
-
-        return true 
+        return this.territories.every(t => t.getOwner() === player);
     }
 
-    toString() {
-        console.log("REGION: " + this.name + "\n");
-        //console.log(this.territories.length);
-        for(let t of this.territories) {
-            t.toString();
-        }
+    toString(): string {
+        return `${this.name}: ${this.territories.map(t => t.name).join(', ')}`;
     }
 }

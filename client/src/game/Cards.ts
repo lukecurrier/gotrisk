@@ -1,31 +1,35 @@
-import { GameTimeMarker, Token } from "../utils/Utils";
+import { Token } from "../utils/types";
 import { Territory } from "./Board/Territory";
 import type { CardCheck } from "./CardCheck";
 import { CardEffect } from "./CardEffect";
-import { GameManager } from "./GameManager";
 import type { Player } from "./Player";
 
 export abstract class Card {
+    private static _nextId = 1;
     readonly id: number;
     readonly name: string;
     readonly checks: CardCheck[];
     protected type: CardType;
     protected owner?: Player;
 
-    constructor(id: number, name: string, type: CardType, checks: CardCheck[]) {
-        this.id = id;
+    constructor(name: string, type: CardType, checks: CardCheck[]) {
+        this.id = Card._nextId++;
         this.name = name;
         this.checks = checks;
         this.type = type;
     }
 
+    setOwner(player: Player) { this.owner = player; }
+    clearOwner() { this.owner = undefined; }
+    getOwner(): Player | undefined { return this.owner; }
+
     cardType(): CardType {
         return this.type;
     }
 
-    isActive(): boolean { 
+    isActive(): boolean {
         if (!this.owner) { throw new Error("No owner!")}
-        return this.checks.every(check => check(this.owner!)); 
+        return this.checks.every(check => check(this.owner!));
     }
 
     play(): void {
@@ -38,14 +42,20 @@ export abstract class Card {
     protected abstract effect(): void;
 }
 
-export class CharacterCard extends Card {
+export class PlayableCard extends Card {
     readonly price: number;
     readonly cardEffect: CardEffect;
 
-    constructor(id: number, name: string, checks: CardCheck[], price: number, effect: CardEffect) {
-        super(id, name, CardType.Character, checks);
+    constructor(name: string, type: CardType, checks: CardCheck[], price: number, effect: CardEffect) {
+        super(name, type, checks);
         this.price = price;
         this.cardEffect = effect;
+    }
+
+    override isActive(): boolean {
+        if (!this.owner) throw new Error("No owner!");
+        if (!this.owner.canSpend(this.price)) return false;
+        return this.checks.every(check => check(this.owner!));
     }
 
     override play(): void {
@@ -57,41 +67,20 @@ export class CharacterCard extends Card {
     }
 
     protected effect(): void {
-        // TODO: define actual Maester effect
-        console.log(`${this.name} effect triggered!`);
+        this.cardEffect(this.owner!);
     }
 }
 
-export class MaesterCard extends Card {
-    readonly price: number;
-    readonly cardEffect: CardEffect;
-
-    constructor(id: number, name: string, checks: CardCheck[], price: number, effect: CardEffect) {
-        super(id, name, CardType.Maester, checks);
-        this.price = price;
-        this.cardEffect = effect;
-    }
-
-    override play(): void {
-        if (!this.isActive()) {
-            throw new Error("Card cannot be played!")
-        }
-        this.owner!.spend(this.price)
-        this.effect()
-    }
-
-    protected effect(): void {
-        // TODO: define actual Maester effect
-        console.log(`${this.name} effect triggered!`);
-    }
-}
-
+/** @deprecated Use PlayableCard with CardType.Character */
+export type CharacterCard = PlayableCard;
+/** @deprecated Use PlayableCard with CardType.Maester */
+export type MaesterCard = PlayableCard;
 
 export class VictoryCard extends Card {
     readonly value: number
 
-    constructor(id: number, name: string, checks: CardCheck[], value: number) {
-        super(id, name, CardType.Victory, checks);
+    constructor(name: string, checks: CardCheck[], value: number) {
+        super(name, CardType.Victory, checks);
         this.value = value;
     }
 
@@ -104,8 +93,8 @@ export class TerritoryCard extends Card {
     readonly token: Token;
     readonly territory: Territory;
 
-    constructor(id: number, name: string, checks: CardCheck[], token: Token, territory: Territory) {
-        super(id, name, CardType.Territory, checks);
+    constructor(name: string, checks: CardCheck[], token: Token, territory: Territory) {
+        super(name, CardType.Territory, checks);
         this.token = token;
         this.territory = territory;
     }
@@ -123,7 +112,7 @@ export class Deck<T extends Card> {
     cards: T[];
 
     constructor(initialCards: T[]) {
-        this.cards = [...initialCards]; 
+        this.cards = [...initialCards];
         this.shuffle();
     }
 
@@ -144,8 +133,8 @@ export class Deck<T extends Card> {
 }
 
 export enum CardType {
-    Character, 
-    Maester, 
-    Victory, 
+    Character,
+    Maester,
+    Victory,
     Territory
 }

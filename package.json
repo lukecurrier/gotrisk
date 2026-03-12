@@ -6,10 +6,15 @@
     "@types/socket.io": "^3.0.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.1",
+    "tsx": "^4.19.0",
     "typescript": "^5.9.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "server": "tsx server/gameServer.ts",
+    "dev": "tsx --watch server/gameServer.ts",
+    "build": "cd client && npm run build",
+    "start": "npm run build && tsx server/gameServer.ts"
   },
   "dependencies": {
     "express": "^5.1.0",

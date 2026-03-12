@@ -1,53 +1,47 @@
-import { Continent } from "./Board/Continent";
 import { Region } from "./Board/Region";
 import { Board } from "./Board/Board";
 import { Territory } from "./Board/Territory";
-import { Phase, PhaseManager } from "./GamePhase";
+import { Phase, PhaseManager, TurnPhase, InvasionPhase } from "./GamePhase";
 import { GameSettings } from "./LobbyManager";
 import { Player } from "./Player";
-import { MaesterCard, VictoryCard, TerritoryCard } from "./Cards";
-import { Card } from "./Cards";
+import { PlayableCard, VictoryCard, TerritoryCard, Deck } from "./Cards";
+import { GameTimeMarker } from "../utils/types";
 
 export class GameManager {
     private static _instance: GameManager;
 
     private phaseManager: PhaseManager;
 
-    private effectStack: Card[];
-
     readonly players: Player[]
     readonly territories: Territory[];
     readonly regions: Region[];
-    readonly continents: Continent[];
     readonly map: Board;
     activePlayerIndex: number;
-    readonly territoryCardDeck: TerritoryCard[];
-    readonly maesterCardDeck: MaesterCard[];
-    readonly victoryCardDeck: VictoryCard[];
+    readonly territoryCardDeck: Deck<TerritoryCard>;
+    readonly maesterCardDeck: Deck<PlayableCard>;
+    readonly victoryCardDeck: Deck<VictoryCard>;
 
     capitalTroops: number = 3;
 
-    private constructor(map: Board, players: Player[], activePlayerIndex: number, 
+    private constructor(map: Board, players: Player[], activePlayerIndex: number,
         territoryCardDeck: TerritoryCard[],
-        maesterCardDeck: MaesterCard[],
+        maesterCardDeck: PlayableCard[],
         victoryCardDeck: VictoryCard[]
     ) {
-        this.phaseManager = new PhaseManager(players);
+        this.phaseManager = new PhaseManager();
         this.map = map;
-        this.continents = map.continents;
-        this.regions = this.continents.flatMap(continent => continent.regions);
-        this.territories = this.regions.flatMap(region => region.territories);
+        this.regions = map.continents.flatMap(c => c.regions);
+        this.territories = this.regions.flatMap(r => r.territories);
         this.players = players;
         this.activePlayerIndex = activePlayerIndex;
-        this.territoryCardDeck = territoryCardDeck;
-        this.maesterCardDeck = maesterCardDeck;
-        this.victoryCardDeck = victoryCardDeck;
-        // TODO: initialize decks
+        this.territoryCardDeck = new Deck(territoryCardDeck);
+        this.maesterCardDeck = new Deck(maesterCardDeck);
+        this.victoryCardDeck = new Deck(victoryCardDeck);
     }
 
     static create(settings: GameSettings, players: Player[], activePlayerIndex: number,
         territoryCardDeck: TerritoryCard[],
-        maesterCardDeck: MaesterCard[],
+        maesterCardDeck: PlayableCard[],
         victoryCardDeck: VictoryCard[]
     ) {
         GameManager._instance = new GameManager(settings.map, players, activePlayerIndex, territoryCardDeck,
@@ -61,13 +55,6 @@ export class GameManager {
         return GameManager._instance;
     }
 
-    // MARK: Pre-game methods
-    addPlayer(id: number, name: string, color: string) {
-        this.guardPreGameOnly()
-        let player = new Player(id, name, color);
-        this.players.push(player);
-    }
-
     getPhaseManager() {
         return this.phaseManager;
     }
@@ -76,11 +63,49 @@ export class GameManager {
         return this.phaseManager.currentPhase.gameOngoing;
     }
 
-    getGameTimeMarker() {
-        return null; //todo return the right game time marker somehow, from phase or whatnot
+    getGameTimeMarker(): GameTimeMarker | null {
+        return this.phaseManager.currentPhase.gameTimeMarker ?? null;
+    }
+
+    getCurrentPhase(): Phase {
+        return this.phaseManager.currentPhase;
+    }
+
+    // MARK: Phase transitions
+
+    startGame() {
+        this.phaseManager.transitionPhases();
+    }
+
+    enterInvasion(from: Territory, target: Territory): InvasionPhase {
+        const turnPhase = this.phaseManager.currentPhase;
+        if (!(turnPhase instanceof TurnPhase)) {
+            throw new Error("Can only declare invasions during a Turn phase!");
+        }
+        const invasion = turnPhase.declareInvasion(from, target);
+        this.phaseManager.advanceTo(invasion);
+        return invasion;
+    }
+
+    resolveInvasion() {
+        const invasion = this.phaseManager.currentPhase;
+        if (!(invasion instanceof InvasionPhase)) {
+            throw new Error("Not currently in an invasion!");
+        }
+        this.phaseManager.restoreTo(invasion.next());
+    }
+
+    endCurrentTurn() {
+        const turnPhase = this.phaseManager.currentPhase;
+        if (!(turnPhase instanceof TurnPhase)) {
+            throw new Error("Can only end turn during a Turn phase!");
+        }
+        turnPhase.endTurn();
+        this.phaseManager.advanceTo(turnPhase.next());
     }
 
     // MARK: In-game methods
+
     getActivePlayer(): Player {
         if (this.activePlayerIndex >= 0 && this.activePlayerIndex < this.players.length) {
             return this.players[this.activePlayerIndex];
@@ -88,26 +113,32 @@ export class GameManager {
         throw new Error("Invalid active player index: " + this.activePlayerIndex);
     }
 
-    setActivePlayer(index: number) {
-        if (index >= 0 && index < this.players.length) {
-            this.activePlayerIndex = index;
-        }
-        throw new Error("Invalid attempt to set active player index: " + index);
-    }
-
-    nextTurn() { // TODO can call a lot of things here at end of turns, like saving state or something idk
-
-        this.nextActivePlayer();
-    }
-
-    private nextActivePlayer() {
+    nextTurn() {
         if (this.players.length < 2) {
             throw new Error("Fewer than two players in game");
         }
         this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
     }
 
+    // MARK: Card drawing
+
+    drawTerritoryCard(player: Player) {
+        const card = this.territoryCardDeck.draw();
+        if (card) player.addCard(card);
+    }
+
+    drawMaesterCard(player: Player) {
+        const card = this.maesterCardDeck.draw();
+        if (card) player.addCard(card);
+    }
+
+    drawVictoryCard(player: Player) {
+        const card = this.victoryCardDeck.draw();
+        if (card) player.addCard(card);
+    }
+
     // MARK: Utilities
+
     guardPreGameOnly(): void {
         if (this.phaseManager.currentPhase.gameOngoing) {
             throw new Error("This action can only be performed before the game starts!");

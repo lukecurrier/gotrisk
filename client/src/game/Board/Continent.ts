@@ -9,11 +9,8 @@ export class Continent {
         this.regions = regions;
     }
 
-    toString() {
-        console.log("CONTINENT: " + this.name + "\n");
-        for (let r of this.regions) {
-            r.toString();
-        }
+    toString(): string {
+        return `${this.name}: ${this.regions.map(r => r.name).join(', ')}`;
     }
 }
     

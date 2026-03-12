@@ -1,17 +1,8 @@
-// Could choose to have these be methods under specific classes, but have them here for now just for funsies
-// Random data structures and utility functions
-
-//import { assert } from "console";
-// import * as fs from 'fs';
-// import { EOL } from 'os';
 import { Continent } from "../game/Board/Continent";
 import { Board } from "../game/Board/Board";
 import { Region } from "../game/Board/Region";
 import { Territory } from "../game/Board/Territory";
-import { Card, CharacterCard, MaesterCard, TerritoryCard, VictoryCard } from "../game/Cards";
-import { Player } from '../game/Player';
-//import { Map as HashMap } from 'immutable';
-import { CardEffect } from '../game/CardEffect';
+import { PlayableCard, TerritoryCard, VictoryCard } from "../game/Cards";
 import { CharacterCards } from '../game/CharacterCards';
 import { MaesterCards } from '../game/MaesterCards';
 import { VictoryCardCheckMap } from '../game/VictoryCardChecks';
@@ -20,48 +11,22 @@ import { Characters } from "./CharactersToUse";
 import { Maesters } from "./MaesterCardsToUse";
 import { VictoryCards } from "./VictoryCardsToUse";
 import { CardCheck, CardChecks } from "../game/CardCheck";
+import { GameTimeMarker, Token } from "./types";
 
-export type Port = 0 | 1 | 2 | 3
-
-export enum Token {
-    Fortification,
-    Knight,
-    SiegeEngine,
-}
-
-export enum GameTimeMarker {
-    AnyTime,
-    OpponentPlaysAMaesterCard,
-    StartOfTurn,
-    TurnInTerritoryCards,
-    Reinforcements,
-    BeforeBuyingCards,
-    GetTerritoryCards,
-    BuyMaesterCards,
-    BeforeDeclaringInvasions,
-    BeforeAnInvasion,
-    BeforeABattle,
-    AfterRollingDiceForAnyReason,
-    AfterRollingDiceForABattle,
-    Maneuver,
-    TurnInVictoryCards,
-    EndOfTurn
-}
+// Re-export so existing imports from Utils still work
+export { GameTimeMarker, Token, type Port } from "./types";
 
 export function randInt(low: number, high: number): number {
-    // random int, inclusive on low end, not inclusive on the high end
-
     if (high <= low) {
         throw Error("Randint called with low >= high");
     }
-
     return Math.floor(Math.random() * (high - low)) + low;
 }
 
 export class Die {
     rollResult: number = 0;
     maxValue: number = 6;
-    rollCount: number = 0;  // needed for the guy who re-rolls 1s, but only one time per die per battle
+    rollCount: number = 0;
 
     constructor(maxValue: number) {
         this.rollResult = 0;
@@ -88,11 +53,10 @@ export class Die {
         return this.rollCount;
     }
 
-    addX(x: number): number { // intentionally can go beyond max face value on die
+    addX(x: number): number {
         this.rollResult = this.rollResult + x;
         return this.rollResult;
     }
-
 }
 
 export class BattleResult {
@@ -101,20 +65,29 @@ export class BattleResult {
     attackingTokens: Token[] = [];
     defendingTokens: Token[] = [];
 
-    // ONLY USE countTokensOfType, for counting tokens of type t in a list
-    filterToType = (t: Token) => ((innerToken: Token, i: number, list: Token[]) => t == innerToken ? 1 : 0);
-    countTokensOfType = (t: Token, tokens: Token[]) => tokens.filter(this.filterToType(t)).reduce((a, b) => a + b, 0);
+    private countTokensOfType(t: Token, tokens: Token[]): number {
+        return tokens.filter(tok => tok === t).length;
+    }
 
-    constructor(attackingTroops: number, defendingTroops: number, 
-        attackingTokens: Token[], 
+    constructor(attackingTroops: number, defendingTroops: number,
+        attackingTokens: Token[],
         defendingTokens: Token[]) {
 
         if (1 > attackingTroops || attackingTroops > 3) {
             throw new Error("Invalid number of attackers");
         }
-
         if (1 > defendingTroops || defendingTroops > 2) {
             throw new Error("Invalid number of defenders");
+        }
+
+        this.attackingTokens = attackingTokens;
+        this.defendingTokens = defendingTokens;
+
+        for (let i = 0; i < attackingTroops; i++) {
+            this.attackDice.push(new Die(6));
+        }
+        for (let i = 0; i < defendingTroops; i++) {
+            this.defendDice.push(new Die(6));
         }
 
         this.applySiegeEngineEffects();
@@ -125,12 +98,8 @@ export class BattleResult {
         let defenderLosses = 0;
 
         const rounds = Math.min(this.attackDice.length, this.defendDice.length);
-
         for (let i = 0; i < rounds; i++) {
-            const attackerDie = this.attackDice[i].rollResult;
-            const defenderDie = this.defendDice[i].rollResult;
-
-            if (attackerDie > defenderDie) {
+            if (this.attackDice[i].rollResult > this.defendDice[i].rollResult) {
                 defenderLosses++;
             } else {
                 attackerLosses++;
@@ -141,391 +110,193 @@ export class BattleResult {
     }
 
     fight(): void {
-        //Do the initial roll and incorporate token effects
-        //TODO add in pre-battle character card / maester card effects
-
-
-        //TODO add in pre-battle maester card effects / character card effects before this fight call
-        // but after the siegeEngine effects call from consructor b/c it initializes dice
-
         this.rollForBattle();
         this.applyFortificationEffects();
         this.applyKnightEffects();
-
-        //TODO add in post-battle maester card effects / character card effects after this fight call
-
     }
 
-    rollForBattle(): void { // Roll all dice
+    rollForBattle(): void {
+        for (const d of this.attackDice) d.roll();
+        for (const d of this.defendDice) d.roll();
 
-        for (let d of this.attackDice) {
-            d.roll();
-        }
-        for (let d of this.defendDice) {
-            d.roll();
-        }
-
-        // Sort descending (highest to lowest)
         this.attackDice.sort((a, b) => b.rollResult - a.rollResult);
         this.defendDice.sort((a, b) => b.rollResult - a.rollResult);
     }
 
     applyFortificationEffects(): void {
-        // Apply defensive fortification effects
-        let defenderFortifications: number = this.countTokensOfType(Token.Fortification, this.defendingTokens);
-
-        for (let d of this.defendDice) {
-            d.addX(defenderFortifications);
-        }
+        const defenderFortifications = this.countTokensOfType(Token.Fortification, this.defendingTokens);
+        for (const d of this.defendDice) d.addX(defenderFortifications);
     }
 
-    applyKnightEffects(): void { //only call with dice sorted descending
-
-        let attackerKnights: number = this.countTokensOfType(Token.Knight, this.attackingTokens);
-        let defenderKnights: number = this.countTokensOfType(Token.Knight, this.defendingTokens);
-
+    applyKnightEffects(): void {
+        const attackerKnights = this.countTokensOfType(Token.Knight, this.attackingTokens);
+        const defenderKnights = this.countTokensOfType(Token.Knight, this.defendingTokens);
         this.attackDice[0].addX(attackerKnights);
         this.defendDice[0].addX(defenderKnights);
-
     }
 
-    applySiegeEngineEffects(): void { 
-        // Apply effects from all siege engines (replace a six sided die with an 8-sider) 
+    applySiegeEngineEffects(): void {
+        const attackerSE = this.countTokensOfType(Token.SiegeEngine, this.attackingTokens);
+        const defenderSE = this.countTokensOfType(Token.SiegeEngine, this.defendingTokens);
 
-        let attackerSiegeEngines: number = this.countTokensOfType(Token.SiegeEngine, this.attackingTokens);
-        let defenderSiegeEngines: number = this.countTokensOfType(Token.SiegeEngine, this.defendingTokens);
+        const attacker8s = Math.min(attackerSE, this.attackDice.length);
+        const attacker6s = this.attackDice.length - attacker8s;
+        this.attackDice = [];
+        for (let i = 0; i < attacker6s; i++) this.attackDice.push(new Die(6));
+        for (let i = 0; i < attacker8s; i++) this.attackDice.push(new Die(8));
 
-        const attacker8s: number = Math.min(attackerSiegeEngines, this.attackDice.length);
-        const attacker6s: number = this.attackDice.length - attacker8s;
-        this.attackDice = []
-        for (let i = 0; i < attacker6s; i++) {
-            this.attackDice.push(new Die(6));
-        }
-        for (let i = 0; i < attacker8s; i++) {
-            this.attackDice.push(new Die(8));
-        }
-
-        const defender8s: number = Math.min(defenderSiegeEngines, this.defendDice.length);
-        const defender6s: number = this.defendDice.length - defender8s;
-        this.defendDice = []
-        for (let i = 0; i < defender6s; i++) {
-            this.defendDice.push(new Die(6));
-        }
-        for (let i = 0; i < defender8s; i++) {
-            this.defendDice.push(new Die(8));
-        }
+        const defender8s = Math.min(defenderSE, this.defendDice.length);
+        const defender6s = this.defendDice.length - defender8s;
+        this.defendDice = [];
+        for (let i = 0; i < defender6s; i++) this.defendDice.push(new Die(6));
+        for (let i = 0; i < defender8s; i++) this.defendDice.push(new Die(8));
     }
-}
-
-export function shuffleCards(deck: Card[]): Card[] {
-    
-  const deckSize: number = deck.length;
-  if (1 > deckSize) {
-    throw new Error("Too few cards in deck to shuffle");
-  }
-
-  for (let i = deckSize - 1; i > 1; i--) {
-    const j = randInt(0, i+1);
-    const temp: Card = deck[i];
-    deck[i] = deck[j];
-    deck[j] = temp;
-  }
-
-  return deck;
-}
-
-export function calculateBaseTroopDeploy(map:Board, player:Player): number {
-    let earnedTotal: number = 0;
-    const minimumTroopsToDeploy = 3;
-
-    // Territories + Castles / 3
-    earnedTotal += Math.floor((player.getTerritoryCount() + player.getCastleCount()) / 3);
-    // + Region Bonus
-    earnedTotal += calculateRegionBonus(map, player);
-    // Territory Card deploys not included here
-
-    return Math.min(earnedTotal, minimumTroopsToDeploy);
-}
-
-export function calculateRegionBonus(map: Board, player: Player): number {
-
-    let bonusSum = 0;
-    for (let c of map.continents) {
-        for (let r of c.regions) {
-            let playerControlsRegion = true; 
-            for (let t of r.territories) {
-                if (t.getOwner() !== player) {
-                    playerControlsRegion = false;
-                    break;
-                }
-            }
-            if (playerControlsRegion) {
-                bonusSum += r.regionBonus;
-            }
-        }
-    }
-
-    return bonusSum;
-}
-
-export function calculatePlayerIncome(map:Board, player:Player) {
-    return 100 * (player.getPortCount() + calculateBaseTroopDeploy(map, player) + calculateRegionBonus(map, player));
 }
 
 export function territorySetValue(territoryCards: TerritoryCard[]): number {
-    //return -1 if not a set, otherwise return how many troops they deploy for
-    let returnValue: number = -1;
+    if (territoryCards.length !== 3) return -1;
 
-    if (territoryCards.length != 3) { // wrong number of territory cards
-        return returnValue;
+    const counts = [0, 0, 0]; // Fortification, Knight, Siege Engine
+    for (const tc of territoryCards) {
+        if (tc.getToken() === Token.Fortification) counts[0]++;
+        else if (tc.getToken() === Token.Knight) counts[1]++;
+        else if (tc.getToken() === Token.SiegeEngine) counts[2]++;
     }
 
-    const counts = [0, 0, 0]; // Fortification, Knight, Siege Engine in that order
+    if (counts.some(n => n === 2)) return -1; // can't form a set
 
-    for (let tc of territoryCards) {
-        if (tc.getToken() == Token.Fortification) {
-            counts[0] += 1;
-        }
-        if (tc.getToken() == Token.Knight) {
-            counts[1] += 1;
-        }
-        if (tc.getToken() == Token.SiegeEngine) {
-            counts[2] += 1;
-        }
-    }
-    if (counts.findIndex((n, index, list) => n==2) != -1) { // found a token type with 2, can't form a set
-        return returnValue;
-    }
-
-    if (counts[0] == counts[1]) { // we have three 1s, return 7 troops for one-of-each deploy type
-        return 7;
-    } else if (counts[0] == 3) { // 3 fortifications
-        return 6;
-    } else if (counts[1] == 3) { // 3 knights
-        return 4;
-    } else { // 3 siege engines
-        return 5;
-    }
+    if (counts[0] === counts[1]) return 7;  // one of each
+    if (counts[0] === 3) return 6;           // 3 fortifications
+    if (counts[1] === 3) return 4;           // 3 knights
+    return 5;                                 // 3 siege engines
 }
 
-export class BoardCreator {
+// ── Map & Deck builders ──────────────────────────────────────────────────────
 
-    constructor() {
-        
-    }
+export function createBoard(): { board: Board; territoryCards: TerritoryCard[] } {
+    const continents: Continent[] = [];
+    const regions: Region[] = [];
+    const territories: Territory[] = [];
+    const territoryCards: TerritoryCard[] = [];
 
-    createFrom(filePath: string): {board: Board, territoryCards: TerritoryCard[]} { //gotrisk\client\src\utils\filename.txt
-        let numSegments = filePath.split("\\").length;
-        let mapName: string = filePath.split(".")[0].split("\\")[numSegments - 1];
-        let continents: Continent[] = [];
-        let regions: Region[] = [];
-        let territories: Territory[] = [];
-        let territoryCards: TerritoryCard[] = [];
+    /*
+    Config file formatted like:
+    ___CONTINENTS___
+    ContinentName
+    ...
+    ___REGIONS___
+    RegionName:ContinentName:OccupationBonus:ColorStringHexadecimal
+    ...
+    ___TERRITORIES___
+    TerritoryName:RegionName:Coastal(0/1):Port(0/1):Castle(0/1):TokenType
+    ...
+    ___CONNECTIONS___
+    T1Name:T2Name
+    ...
+    */
 
+    try {
+        const fileContent: string = EssosMap;
+        const theContinentsPart = fileContent.split(`\n___REGIONS___`)[0].split(`CONTINENTS___\n`)[1];
 
-        /*
-        Config file formatted like:
-        ___CONTINENTS___
-        ContinentName
-        ...
-        ___REGIONS___
-        RegionName:ContinentName:OccupationBonus:ColorStringHexadecimal
-        ...
-        ___TERRITORIES___
-        TerritoryName:RegionName:Coastal(0/1):Port(0/1):Castle(0/1)
-        ...
-        ___CONNECTIONS___
-        T1Name:T2Name
-        ...
-        */
-
-        // only have to list connections one way (we'll assemble both links automatically)
-
-        try { // yeah this is a mega shit function who cares rn
-            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const fileContent: string = EssosMap;
-            const theContinentsPart = fileContent.split(`\n___REGIONS___`)[0].split(`CONTINENTS___\n`)[1];
-            //let numContinents: number = theContinentsPart.split(`\n`).length;
-            
-            for (let i of theContinentsPart.split(`\n`)) {
-                continents.push(new Continent(i, []));
-            }
-
-            const theRegionsPart = fileContent.split(`\n___TERRITORIES___`)[0].split(`REGIONS___\n`)[1];
-            //let numRegions: number = theRegionsPart.split(`\n`).length;
-            //console.log('File Content:', theRegionsPart);
-            //console.log('Num continents:', numRegions);
-
-            for (let i of theRegionsPart.split(`\n`)) {
-                const regionParts: string[] = i.split(":");
-                const regionName = regionParts[0];
-                const continent = continents.filter((continent, index, list) => continent.name == regionParts[1])[0];
-                const color = regionParts[3];
-                const occupationBonus = Number(regionParts[2]);
-                let region = new Region(regionName, occupationBonus, [], color)
-                regions.push(region);
-                continent.regions.push(region);
-            }
-
-            const theTerritoriesPart = fileContent.split(`\n___CONNECTIONS___`)[0].split(`TERRITORIES___\n`)[1];
-            let tokenNameMap = new Map<string, Token> ([["KNIGHT", Token.Knight], 
-                ["FORTIFICATION", Token.Fortification],
-                ["SIEGEENGINE", Token.SiegeEngine]]);
-
-            for (let i of theTerritoriesPart.split(`\n`)) {
-                const territoryParts: string[] = i.split(":");
-                const territoryName = territoryParts[0];
-                let regionItsIn = regions.filter((r, index, list) => r.name == territoryParts[1])[0];
-                const port = Number(territoryParts[3]) == 1 ? true : false;
-                const coastal = Number(territoryParts[2]) == 1 ? true : false;
-                const castle = Number(territoryParts[4]) == 1 ? true : false;
-                const tokenType: Token = tokenNameMap.get(territoryParts[5])!;
-                let territory = new Territory(territoryName, coastal, port, castle, regionItsIn);
-                let territoryCard = new TerritoryCard(0, territoryName, [CardChecks.isRightGameTime(GameTimeMarker.TurnInTerritoryCards)], tokenType, territory); //TODO all cards have same checks add here
-                regionItsIn.territories.push(territory);
-                territories.push(territory);
-                territoryCards.push(territoryCard);
-            }
-
-            const theConnectionsPart = fileContent.split(`\n___CONNECTIONS___\n`)[1];
-
-            for (let i of theConnectionsPart.split(`\n`)) {
-                const ends: string[] = i.split(":");
-                const t1Name = ends[0];
-                const t2Name = ends[1].split(`\n`)[0];
-                const t1 = territories.filter((t, index, list) => t.name == t1Name)[0];
-                const t2 = territories.filter((t, index, list) => t.name == t2Name)[0];
-                t1.addNeighbor(t2);
-            }
-
-        } catch (error) {
-            console.error('Error reading file:', error);
-        }
-        //new Map(mapName, continents).toString();
-        let board = new Board(mapName, continents);
-        return {board, territoryCards};
-    }
-
-}
-
-export class CharacterCardReader {
-
-    constructor () {
-
-    }
-
-    createCharacterDeckFrom(filePath: string): CharacterCard[] {
-
-        let characters: CharacterCard[] = [];
-        
-        try {
-            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const fileContent: string = Characters;
-            const lines: string[] = fileContent.split(`\n`);
-            for (let characterName of lines) {
-                characters.push(CharacterCards.filter((cc, index, list) => cc.name === characterName)[0]);
-            }
-        } catch (error) {
-            console.error('Error reading file:', error);
+        for (const name of theContinentsPart.split(`\n`)) {
+            continents.push(new Continent(name, []));
         }
 
-        return characters;
-    }
+        const theRegionsPart = fileContent.split(`\n___TERRITORIES___`)[0].split(`REGIONS___\n`)[1];
 
-}
-
-export class MaesterCardReader {
-
-    constructor () {
-
-    }
-
-    createMaesterCardDeckFrom(filePath: string): MaesterCard[] {
-        let maesters: MaesterCard[] = [];
-        
-        try {
-            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const fileContent = Maesters;
-            const lines: string[] = fileContent.split(`\n`);
-            for (let mName of lines) {
-                maesters.push(MaesterCards.filter((mc, index, list) => mc.name === mName)[0]);
-            }
-        } catch (error) {
-            console.error('Error reading file:', error);
+        for (const line of theRegionsPart.split(`\n`)) {
+            const parts = line.split(":");
+            const continent = continents.find(c => c.name === parts[1])!;
+            const region = new Region(parts[0], Number(parts[2]), [], parts[3]);
+            regions.push(region);
+            continent.regions.push(region);
         }
 
-        return maesters;
-    }
+        const theTerritoriesPart = fileContent.split(`\n___CONNECTIONS___`)[0].split(`TERRITORIES___\n`)[1];
+        const tokenNameMap = new Map<string, Token>([
+            ["KNIGHT", Token.Knight],
+            ["FORTIFICATION", Token.Fortification],
+            ["SIEGEENGINE", Token.SiegeEngine],
+        ]);
 
-}
-
-export class VictoryCardReader {
-
-    constructor () {
-
-    }
-
-    createVictoryCardDeckFrom(filePath: string): {victoryCards: VictoryCard[], pointsToWin: number} { // Have to make them here bc point values are configurable
-        let victoryCards: VictoryCard[] = [];
-        let pointsToWin: number = 0;
-        
-        try {
-            //const fileContent: string = fs.readFileSync(filePath, 'utf-8');
-            const fileContent: string = VictoryCards;
-            const lines: string[] = fileContent.split(`\n___VICTORY_CARDS___\n`);
-            pointsToWin = Number(fileContent.split(`\n___POINTS_TO_WIN___\n`)[1].split(`\n___VICTORY_CARDS___\n`)[0]);
-            for (let line of lines) {
-                const parts: string[] = line.split(":");
-                const checks: CardCheck[] = VictoryCardCheckMap.get(parts[0])!;
-                victoryCards.push(new VictoryCard(0, parts[0], checks.concat([CardChecks.isRightGameTime(GameTimeMarker.TurnInVictoryCards)]), Number(parts[1])));
-            }
-        } catch (error) {
-            console.error('Error reading file:', error);
+        for (const line of theTerritoriesPart.split(`\n`)) {
+            const parts = line.split(":");
+            const region = regions.find(r => r.name === parts[1])!;
+            const coastal = parts[2] === "1";
+            const port = parts[3] === "1";
+            const castle = parts[4] === "1";
+            const tokenType = tokenNameMap.get(parts[5])!;
+            const territory = new Territory(parts[0], coastal, port, castle, region);
+            const card = new TerritoryCard(parts[0], [CardChecks.isRightGameTime(GameTimeMarker.TurnInTerritoryCards)], tokenType, territory);
+            region.territories.push(territory);
+            territories.push(territory);
+            territoryCards.push(card);
         }
 
-        return {victoryCards, pointsToWin}
+        const theConnectionsPart = fileContent.split(`\n___CONNECTIONS___\n`)[1];
+
+        for (const line of theConnectionsPart.split(`\n`)) {
+            const ends = line.split(":");
+            const t1 = territories.find(t => t.name === ends[0])!;
+            const t2 = territories.find(t => t.name === ends[1].split(`\n`)[0])!;
+            t1.addNeighbor(t2);
+        }
+    } catch (error) {
+        console.error('Error reading map:', error);
     }
-  //TODO streamline all this shit
+
+    return { board: new Board("Essos", continents), territoryCards };
 }
-  
 
-export class CardEffectStack {
-    private static effectsStack: CardEffectStack;
-    private stack: CardEffect[];
+export function createCharacterDeck(): PlayableCard[] {
+    const characters: PlayableCard[] = [];
+    try {
+        for (const name of Characters.split(`\n`)) {
+            const match = CharacterCards.find(cc => cc.name.toUpperCase() === name.trim().toUpperCase());
+            if (match) characters.push(match);
+        }
+    } catch (error) {
+        console.error('Error reading characters:', error);
+    }
+    return characters;
+}
 
-    public static getInstance(): CardEffectStack {
-    if (!CardEffectStack.effectsStack) {
-      CardEffectStack.effectsStack = new CardEffectStack();
+export function createMaesterDeck(): PlayableCard[] {
+    const maesters: PlayableCard[] = [];
+    try {
+        for (const line of Maesters.split(`\n`)) {
+            const parts = line.split(":");
+            const mName = parts[0].trim();
+            const copies = parts.length > 1 ? Number(parts[1]) : 1;
+            const match = MaesterCards.find(mc => mc.name.toUpperCase() === mName.toUpperCase());
+            if (match) {
+                for (let i = 0; i < copies; i++) maesters.push(match);
+            }
+        }
+    } catch (error) {
+        console.error('Error reading maesters:', error);
     }
-      return CardEffectStack.effectsStack;
+    return maesters;
+}
+
+export function createVictoryDeck(): { victoryCards: VictoryCard[]; pointsToWin: number } {
+    const victoryCards: VictoryCard[] = [];
+    let pointsToWin = 0;
+
+    try {
+        const fileContent: string = VictoryCards;
+        pointsToWin = Number(fileContent.split("___POINTS_TO_WIN___\n")[1].split("\n")[0]);
+        const cardSection = fileContent.split(`\n___VICTORY_CARDS___\n`)[1];
+        for (const line of cardSection.split(`\n`)) {
+            if (!line.trim()) continue;
+            const parts = line.split(":");
+            const checks: CardCheck[] = VictoryCardCheckMap.get(parts[0]) ?? [];
+            victoryCards.push(new VictoryCard(parts[0], checks.concat([CardChecks.isRightGameTime(GameTimeMarker.TurnInVictoryCards)]), Number(parts[1])));
+        }
+    } catch (error) {
+        console.error('Error reading victory cards:', error);
     }
 
-    constructor() {
-        this.stack = [];
-        // TODO config default response delay and other stack vars here? or in game manager?
-    }
-
-    push(element: CardEffect): void { //todo maybe give the stack a time marker and only add if matches?
-      this.stack.push(element);
-    }
-
-    pop(): CardEffect | undefined {
-      return this.stack.pop();
-    }
-
-    peek(): CardEffect | undefined {
-      return this.stack[this.stack.length - 1];
-    }
-
-    isEmpty(): boolean {
-      return this.stack.length === 0;
-    }
-
-    size(): number {
-      return this.stack.length;
-    }
-
-    clear(): void {
-      this.stack = [];
-    }
+    return { victoryCards, pointsToWin };
 }

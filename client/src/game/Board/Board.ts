@@ -9,10 +9,7 @@ export class Board {
         this.continents = continents;
     }
 
-    toString() {
-        console.log("BOARD: " + this.name + "\n");
-        for (let c of this.continents) {
-            c.toString();
-        }
+    toString(): string {
+        return `${this.name}: ${this.continents.map(c => c.name).join(', ')}`;
     }
 }

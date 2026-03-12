@@ -1,298 +1,257 @@
-import { GameTimeMarker } from "../utils/Utils";
+import { GameTimeMarker } from "../utils/types";
 import { CardChecks } from "./CardCheck";
-import { MaesterCard } from "./Cards";
+import { PlayableCard, CardType } from "./Cards";
 
-export const MaesterCards: MaesterCard [] = [
-    // Play before you declare invasions for a turn
-    // You may declare invasions from territories you control with a port against any territories with a coastline border this turn
-    new MaesterCard(0,
+export const MaesterCards: PlayableCard[] = [
+    new PlayableCard(
         "Pirate Ship Fleet",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions),
             CardChecks.isPlayerTurn()],
         100,
         (player) => null),
-    
-    // Play after an opponent commits attacking armies against you
-    // Roll a d6, destroy floor((rollResult + 1) / 2) attacking armies
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Desperate Ambush",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeABattle)],
         200,
         (player) => null),
-    
-    // Play after an opponent attacking armies to a battle against you
-    // All attacking armies are destroyed
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Lead Into A Trap",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeABattle)],
         300,
         (player) => null),
-    
-    // Play at any time
-    // Place three armies, one each in up to three different territories you control 
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Preparing For War",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         200,
         (player) => null),
-    
-    // Play at any time
-    // Add a Fortification to a territory you control
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Reinforce Bulwarks",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         100,
         (player) => null),
-    
-    // Play when an opponent plays a Maester Card
-    // Cancel that card's effect
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Spider's Sabotage",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.OpponentPlaysAMaesterCard)],
         200,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control
-    // Give that player 200 gold and that territory cannot be invaded this turn
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Bribery",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
-    
-    // Play at any time
-    // Add a Knight to a territory you control
-    new MaesterCard(0,
+
+    new PlayableCard(
         "A Sworn Sword",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         100,
         (player) => null),
-    
-    // Play when you declare an invasion
-    // Add 1 to your highest die roll for the duration of the invasion
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Strength Of Steel",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
-    
-    // Play when an opponent declares an invasion against a territory you control with a castle
-    // Add 1 to your highest defense die for the duration of the invasion
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Castle Walls",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
-    
-    // Play at any time
-    // Add a Siege Engine to a territory you control
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Weapons of War",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.AnyTime)],
         100,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Draw and discard a territory card. Destroy one army in each territory controlled by an opponent in that territory's region
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Sickness in the Ranks",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Reveal the top two cards of the territory card deck. Destroy half of the armies in each of those territories, rounded down, if controlled by an opponent
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Mass Desertion",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         200,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Draw one maester card at random from an opponent and add it to your hand
-    new MaesterCard(0,
+
+    new PlayableCard(
         "A Web of Lies",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
-    
-    // Play before you declare an invasion
-    // Choose a character from the defending player's house. If you conquer the territory, you also capture that character.
-    // Until that player pays you 500 gold as ransom to return the character, that character's ability cannot be used.
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Taken Captive",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
-    
-    // Play after you roll dice for any reason
-    // Change any one dice to its highest value
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Valryian Steel",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.AfterRollingDiceForAnyReason)],
         100,
         (player) => null),
-    
-    // Play after an opponent commits attacking armies to a battle against a territory you control.
-    // Destroy up to two attacking armies. Add two armies to teh defending territory.
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Shifting Alliance",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeABattle)],
         400,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control
-    // Add 1 to all your dice rolls this turn, until that opponent captures the defending territory
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Establish the High Ground",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Each opponent must discard one maester card at random
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Confusion in the Ranks",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
-    
-    // Play at the start of your turn
-    // Costs to use character abilities and maester cards are doubled for all opopnents until the start of your next turn
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Mourning the Fallen",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         300,
         (player) => null),
-    
-    // Play beforer you declare invasions for a turn
-    // Each opponent must destroy two of his armies, one at a time, in any order. 
-    // Then you detroy one of your armies. One army must remain in each territory.
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Winter is Coming",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Choose an opponent's territory adjacent to one you control. 
-    // Roll a six sided die. Remove up to that many armies from the chosen territory. One must remain.
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Cut Off Supply Lines",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control with a port
-    // Add one to your higtest defense die for the duration of the invasion
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Fortified Ports",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
-    
-    // Play at the start of your turn
-    // You may steal up to 200 gold from each opponent
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Hired Thieves",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         200,
         (player) => null),
-    
-    // Play at the start of your turn
-    // All opponents roll a d6, lowest rollers lose 1 victory point (10% of victory total)
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Best Laid Plans",
-        [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],        
+        CardType.Maester,
+        [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         200,
         (player) => null),
-    
-    // Play when an opponent declares an invasion against another opponent
-    // Destroy up to 2 armies in the attacking territory and up to 2 armies in the defending territory
-    // One army must remain 
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Unplanned Losses",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         300,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control
-    // Roll a d6, add that many armies to the defending territory
-    new MaesterCard(0,
+
+    new PlayableCard(
         "A Call to Arms",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         300,
         (player) => null),
-    
-    // Play when you declare an invasion
-    // If you conquer the territory, you also steal up to 300 gold from the opponent who controlled it
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Raid the Countryside",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Kill any one character, removing them from the game
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Valar Morghulis",
-        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],        
+        CardType.Maester,
+        [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         500,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Draw a territory card and place it face down with 5 armies on it. 
-    // When you control this territory, you may reveal the card and place the armies on that territory
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Rally The Smallfolk",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         300,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control
-    // Cancel the invasion, and that opponent cannot conquer any territories from you for the remainder of this turn
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Wed for Peace",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         400,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control
-    // Remove all of your armies but one from the territory being invaded and place them on any other territory you control
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Stragetic Withdrawl",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         100,
         (player) => null),
-    
-    // Play when an opponent declares an invasion on a territory you control
-    // That territory cannot be invaded this turn until that player conquers a territory from another player
-    new MaesterCard(0,
+
+    new PlayableCard(
         "A Temporary Truce",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeAnInvasion)],
         200,
         (player) => null),
-    
-    // Play at the start of an opponent's turn before they collect gold or reinforcement armies
-    // That player recieves only half their initial amount of gold / army income, rounded down
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Freefolk Uprising",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.StartOfTurn)],
         300,
         (player) => null),
-    
-    // Play before you declare invasions for a turn
-    // Choose a character and roll a d6. If you roll a 3 or higher, remove that character from the game.
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Blood Magic",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.BeforeDeclaringInvasions)],
         200,
         (player) => null),
-    
-    // Play when you collect reinforcement armies
-    // Roll a d6, add that many armies to your reinforcement this turn
-    new MaesterCard(0,
+
+    new PlayableCard(
         "Call in Your Banners",
+        CardType.Maester,
         [CardChecks.isRightGameTime(GameTimeMarker.Reinforcements)],
         300,
         (player) => null),
